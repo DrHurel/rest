@@ -1,0 +1,61 @@
+# http://json-schema.org/draft-04/schema#
+
+openapi: "3.0.0"
+info:
+  title: "RestHotel api"
+  description: "A description of your API"
+  version: "1.0.0"
+paths:
+  /api/v1/rooms:
+    get:
+      operationId:
+      description: get all rooms.
+      parameters:
+        - name: start-date
+          in: query
+          required: false
+        - name: end-date
+          in: query
+          required: false
+        - name: minsize
+          in: query
+          required: false
+        - name: minprize
+          in: query
+          required: false
+        - name: maxprice
+          in: query
+          required: false
+        - name: beds
+          in: query
+          required: false
+          schema:
+            type: int
+
+  /api/v1/room/{uuid}:
+    get:
+      operationId:
+      description: Get room detailed information.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+    post:
+      operationId: run.post_greeting
+      responses:
+        200:
+          description: "Greeting response"
+          content:
+            text/plain:
+              schema:
+                type: string
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+  /api/v1/hotel/info:
