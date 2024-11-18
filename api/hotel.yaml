@@ -155,7 +155,7 @@ paths:
 
   /api/v1/hotel/info:
     get:
-      operationId: hotel.get_hotel_images
+      operationId: hotel.get_hotel_info
       responses:
         "200":
           description: Hotel information.
@@ -165,3 +165,12 @@ paths:
                 type: object
   /api/v1/hotel/images:
     get:
+      operationId: hotel.get_hotel_images
+
+      responses:
+        "200":
+          description: A list of hotel images
+          content:
+            application/json:
+              schema:
+                type: array

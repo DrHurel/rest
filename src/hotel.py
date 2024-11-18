@@ -2,9 +2,12 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from connexion import FlaskApp
 import configparser
+from connexion.options import SwaggerUIOptions
+
+options = SwaggerUIOptions(swagger_ui_path="/docs")
 
 app = FlaskApp(__name__)
-app.add_api(Path(__file__).parent / "../api/hotel.yaml")  # noqa: F821
+app.add_api(Path(__file__).parent / "../api/hotel.yaml", swagger_ui_options=options)  # noqa: F821
 
 
 # Get all rooms
@@ -30,7 +33,7 @@ def get_rooms(
     Returns:
         List[Dict[str, Any]]: A list of rooms matching the criteria.
     """
-    pass
+    return [], 200
 
 
 # Get room detailed information
@@ -44,7 +47,7 @@ def get_room_details(uuid: str) -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: Detailed information about the room.
     """
-    pass
+    return {}, 200
 
 
 # Book a room
@@ -58,7 +61,7 @@ def book_room(uuid: str) -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: Response data confirming the booking.
     """
-    pass
+    return {}, 200
 
 
 # Get room images
@@ -72,7 +75,7 @@ def get_room_images(uuid: str) -> List[Dict[str, Any]]:
     Returns:
         List[Dict[str, Any]]: A list of image data for the room.
     """
-    pass
+    return {}, 200
 
 
 # Get hotel information
@@ -83,7 +86,7 @@ def get_hotel_info() -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: Information about the hotel.
     """
-    pass
+    return {}, 200
 
 
 # Get hotel images
@@ -94,4 +97,4 @@ def get_hotel_images() -> List[Dict[str, Any]]:
     Returns:
         List[Dict[str, Any]]: A list of image data for the hotel.
     """
-    pass
+    return [], 200
