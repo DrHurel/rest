@@ -8,54 +8,160 @@ info:
 paths:
   /api/v1/rooms:
     get:
-      operationId:
-      description: get all rooms.
+      operationId: hotel.get_rooms
+      description: get rooms with optional filter.
       parameters:
         - name: start-date
           in: query
           required: false
+          schema:
+            type: string
+            format: date
         - name: end-date
           in: query
           required: false
+          schema:
+            type: string
+            format: date
         - name: minsize
           in: query
           required: false
+          schema:
+            type: integer
         - name: minprize
           in: query
           required: false
+          schema:
+            type: number
         - name: maxprice
           in: query
           required: false
+          schema:
+            type: number
         - name: beds
           in: query
           required: false
           schema:
-            type: int
+            type: integer
+
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rooms:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        size:
+                          type: integer
+                        price:
+                          type: number
 
   /api/v1/room/{uuid}:
     get:
-      operationId:
+      operationId: hotel.get_room_details
       description: Get room detailed information.
       parameters:
-        - name: id
+        - name: uuid
           in: path
           required: true
           schema:
             type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rooms:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      name:
+                        type: string
+                      size:
+                        type: integer
+                      price:
+                        type: number
 
     post:
-      operationId: run.post_greeting
-      responses:
-        200:
-          description: "Greeting response"
-          content:
-            text/plain:
-              schema:
-                type: string
+      operationId: hotel.book_room
       parameters:
-        - name: id
+        - name: uuid
           in: path
           required: true
           schema:
             type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rooms:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      name:
+                        type: string
+                      size:
+                        type: integer
+                      price:
+                        type: number
+
+  /api/v1/room/{uuid}/images:
+    get:
+      operationId: hotel.get_room_images
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rooms:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      name:
+                        type: string
+                      size:
+                        type: integer
+                      price:
+                        type: number
+
   /api/v1/hotel/info:
+    get:
+      operationId: hotel.get_hotel_images
+      responses:
+        "200":
+          description: Hotel information.
+          content:
+            application/json:
+              schema:
+                type: object
+  /api/v1/hotel/images:
+    get:
