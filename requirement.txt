@@ -3,3 +3,4 @@ connexion[flask]
 syrupy
 connexion[swagger-ui]
 openapi-python-client
+sqlalchemy

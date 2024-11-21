@@ -8,7 +8,7 @@ info:
 paths:
   /api/v1/rooms:
     get:
-      operationId:
+      operationId: agency.get_rooms
       description: get all rooms.
       parameters:
         - name: start-date
@@ -31,7 +31,24 @@ paths:
           required: false
           schema:
             type: int
-      responses: 200
+        - name: location
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: location_radius
+          in: query
+          schema:
+            type: number
+          required: false
+
+      responses:
+        "200":
+          description: a list of rooms
+          content:
+            application/json:
+              schema:
+                type: array
 
   /api/v1/room/{uuid}:
     get:
@@ -43,7 +60,7 @@ paths:
           required: true
           schema:
             type: string
-
+  /api/v1/room/{uuid}/book:
     post:
       operationId: run.post_greeting
       responses:
@@ -64,6 +81,40 @@ paths:
           required: true
           schema:
             type: string
+    delete:
+      description: Cancel a room reservation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: reservation_id
+          id: query
+    patch:
+      description: Update a room reservation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: reservation_id
+          id: query
+      responses:
+        "200":
+          description: update Successful
+
   /api/v1/agency/info:
     get:
       description: Agency Info

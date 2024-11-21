@@ -5,11 +5,13 @@ info:
   title: "RestHotel api"
   description: "A description of your API"
   version: "1.0.0"
+servers:
+  - url: http://localhost:1234/api/v1
 paths:
-  /api/v1/rooms:
+  /rooms:
     get:
       operationId: hotel.get_rooms
-      description: get rooms with optional filter.
+      description: fetch rooms with optional filter.
       parameters:
         - name: start-date
           in: query
@@ -66,7 +68,7 @@ paths:
                         price:
                           type: number
 
-  /api/v1/room/{uuid}:
+  /room/{uuid}:
     get:
       operationId: hotel.get_room_details
       description: Get room detailed information.
@@ -95,7 +97,7 @@ paths:
                         type: integer
                       price:
                         type: number
-
+  /room/{uuid}/book:
     post:
       operationId: hotel.book_room
       parameters:
@@ -104,6 +106,18 @@ paths:
           required: true
           schema:
             type: string
+        - name: token
+          description: the authentification token of the agency
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: the booking
+        content:
+          application/json:
+            schema:
+              type: object
       responses:
         "200":
           description: Successful response
@@ -123,8 +137,41 @@ paths:
                         type: integer
                       price:
                         type: number
-
-  /api/v1/room/{uuid}/images:
+    delete:
+      operationId: hotel.cancel_room_reservation
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: token
+          description: the authentification token of the agency
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ok
+    patch:
+      operationId: hotel.update_room_reservation
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: token
+          description: the authentification token of the agency
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ok
+  /room/{uuid}/images:
     get:
       operationId: hotel.get_room_images
       parameters:
@@ -153,7 +200,7 @@ paths:
                       price:
                         type: number
 
-  /api/v1/hotel/info:
+  /hotel/info:
     get:
       operationId: hotel.get_hotel_info
       responses:
@@ -163,7 +210,7 @@ paths:
             application/json:
               schema:
                 type: object
-  /api/v1/hotel/images:
+  /hotel/images:
     get:
       operationId: hotel.get_hotel_images
 

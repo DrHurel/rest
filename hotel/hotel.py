@@ -4,10 +4,14 @@ from connexion import FlaskApp
 import configparser
 from connexion.options import SwaggerUIOptions
 
-options = SwaggerUIOptions(swagger_ui_path="/docs")
+root_path = Path(__file__).parent
+
+config = configparser.ConfigParser()
+config.read(root_path / "hotel.ini")
 
 app = FlaskApp(__name__)
-app.add_api(Path(__file__).parent / "../api/hotel.yaml", swagger_ui_options=options)  # noqa: F821
+options = SwaggerUIOptions(swagger_ui_path="/docs")
+app.add_api(root_path / ".." / "api" / "hotel.yaml", swagger_ui_options=options)  # noqa: F821
 
 
 # Get all rooms
@@ -51,7 +55,7 @@ def get_room_details(uuid: str) -> Dict[str, Any]:
 
 
 # Book a room
-def book_room(uuid: str) -> Dict[str, Any]:
+def book_room(uuid: str, token: str) -> Dict[str, Any]:
     """
     Book a specific room.
 
@@ -62,6 +66,32 @@ def book_room(uuid: str) -> Dict[str, Any]:
         Dict[str, Any]: Response data confirming the booking.
     """
     return {}, 200
+
+
+def cancel_room_reservation(uuid: str, token: str) -> Dict[str, Any]:
+    """
+    Book a specific room.
+
+    Parameters:
+        uuid (str): The unique identifier of the room to be booked.
+
+    Returns:
+        Dict[str, Any]: Response data confirming the booking.
+    """
+    return 200
+
+
+def update_room_reservation(uuid: str, token: str) -> Dict[str, Any]:
+    """
+    Book a specific room.
+
+    Parameters:
+        uuid (str): The unique identifier of the room to be booked.
+
+    Returns:
+        Dict[str, Any]: Response data confirming the booking.
+    """
+    return 200
 
 
 # Get room images
@@ -80,13 +110,19 @@ def get_room_images(uuid: str) -> List[Dict[str, Any]]:
 
 # Get hotel information
 def get_hotel_info() -> Dict[str, Any]:
+    global config
+
     """
     Retrieve general information about the hotel.
 
     Returns:
         Dict[str, Any]: Information about the hotel.
     """
-    return {}, 200
+    return {
+        "name": config["hotel_description"]["name"],
+        "description": config["hotel_description"]["description"],
+        "stars": int(config["hotel_description"]["stars"]),
+    }, 200
 
 
 # Get hotel images
