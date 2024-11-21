@@ -3,5 +3,10 @@
         "testing"
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "cSpell.words": [
+        "maxprice",
+        "minprize",
+        "minsize"
+    ]
 }

@@ -19,3 +19,5 @@ paths:
             application/json:
               schema:
                 type: array
+        "501":
+          description: "Missing agency list"

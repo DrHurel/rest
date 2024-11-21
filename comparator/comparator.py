@@ -1,3 +1,4 @@
+from logging import Logger
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from connexion import FlaskApp
@@ -15,4 +16,12 @@ app.add_api(root_path / ".." / "api" / "comparator.yaml", swagger_ui_options=opt
 
 
 def get_agency():
-    return []
+    global config
+
+    if not config.has_section("agency_list"):
+        return 501
+
+    return [
+        {"name": name, "url": config["agency_list"][name]}
+        for name in config["agency_list"]
+    ]

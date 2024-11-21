@@ -107,7 +107,7 @@ paths:
           schema:
             type: string
         - name: token
-          description: the authentification token of the agency
+          description: the authentication token of the agency
           in: query
           required: true
           schema:
@@ -146,7 +146,7 @@ paths:
           schema:
             type: string
         - name: token
-          description: the authentification token of the agency
+          description: the authentication token of the agency
           in: query
           required: true
           schema:
@@ -163,7 +163,7 @@ paths:
           schema:
             type: string
         - name: token
-          description: the authentification token of the agency
+          description: the authentication token of the agency
           in: query
           required: true
           schema:
