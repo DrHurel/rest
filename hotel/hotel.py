@@ -1,10 +1,13 @@
 import array
 import json
 from logging import Logger
+import os
 from pathlib import Path
+from uuid import UUID
 from connexion import FlaskApp
 from typing import Any, Dict, List, Optional
 import configparser
+import connexion
 from flask import jsonify
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
@@ -32,28 +35,14 @@ engine = create_engine(DATABASE_URI, echo=True)  # echo=True logs SQL queries
 SessionLocal = sessionmaker(bind=engine)
 
 
-# Function to test the connection
-def test_connection():
-    try:
-        with engine.connect() as connection:
-            result = connection.execute(text("SELECT 1"))
-            print(f"Database connected: {result.scalar()}")
-    except Exception as e:
-        print(f"Database connection failed: {e}")
-
-
-# Test the database connection
-test_connection()
-
-
 # Get all rooms
 def get_rooms(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
-    minsize: Optional[int] = None,
-    minprize: Optional[float] = None,
-    maxprice: Optional[float] = None,
-    beds: Optional[int] = None,
+    minsize: Optional[int] = 0,
+    minprize: Optional[float] = 0,
+    maxprice: Optional[float] = 0b11111111,
+    beds: Optional[int] = 1,
 ) -> List[Dict[str, Any]]:
     """
     Retrieve a list of rooms with optional filters.
@@ -73,12 +62,15 @@ def get_rooms(
     global engine
 
     with engine.connect() as connection:
-        rooms = connection.execute(text("SELECT * FROM rooms")).fetchall()
+        rooms = connection.execute(
+            text(
+                f"SELECT id,name,size,beds,price,description FROM rooms WHERE beds >= {beds} AND price >= {minprize} AND price <= {maxprice}"
+            )
+        ).fetchall()
 
-        rooms_list = [[data for data in room.tuple()] for room in rooms]
+        rooms_list = [dict(room._mapping) for room in rooms]
 
-        return jsonify(rooms_list), 200
-    return 501
+        return rooms_list, 200
 
 
 # Get room detailed information
@@ -92,11 +84,20 @@ def get_room_details(uuid: str) -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: Detailed information about the room.
     """
-    return {}, 200
+    with engine.connect() as connection:
+        rooms = connection.execute(
+            text(
+                f"SELECT id,name,size,beds,price,description FROM rooms WHERE id={uuid}"
+            )
+        ).fetchall()
+
+        rooms_list = [dict(room._mapping) for room in rooms]
+
+        return rooms_list, 200
 
 
 # Book a room
-def book_room(uuid: str, token: str) -> Dict[str, Any]:
+def book_room(uuid: str, token: str, body) -> Dict[str, Any]:
     """
     Book a specific room.
 
@@ -106,6 +107,20 @@ def book_room(uuid: str, token: str) -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: Response data confirming the booking.
     """
+
+    with engine.connect() as connection:
+        reservation = connection.execute(
+            text(
+                "SELECT * FROM create_reservation('{}' ,'{}','{}')".format(
+                    uuid, body["start-date"], body["end-date"]
+                )
+            )
+        ).fetchall()
+
+        connection.commit()
+
+        return [dict(res._mapping) for res in reservation][0], 200
+
     return {}, 200
 
 

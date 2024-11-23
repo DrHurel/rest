@@ -113,11 +113,20 @@ paths:
           schema:
             type: string
       requestBody:
+        required: true
         description: the booking
         content:
           application/json:
             schema:
               type: object
+              properties:
+                start-date:
+                  type: string
+                  format: date
+                end-date:
+                  type: string
+                  format: date
+
       responses:
         "200":
           description: Successful response
