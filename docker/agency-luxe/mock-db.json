@@ -1,0 +1,29 @@
+{
+    "name": "Luxury Escapes Agency",
+    "partnered_hotels": [
+        {
+            "name": "Serene Bay Resort & Spa",
+            "available_rooms": [
+                "Oceanview Deluxe Room",
+                "Seaside Suite",
+                "Honeymoon Penthouse"
+            ]
+        },
+        {
+            "name": "Mountain Crest Lodge",
+            "available_rooms": [
+                "Cozy Cabin Room",
+                "Luxury Ski Suite",
+                "Presidential Lodge"
+            ]
+        },
+        {
+            "name": "Palm Horizon Villas",
+            "available_rooms": [
+                "Garden View Villa",
+                "Luxury Pool Villa",
+                "Presidential Retreat Villa"
+            ]
+        }
+    ]
+}

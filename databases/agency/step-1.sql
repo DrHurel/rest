@@ -1,38 +1,31 @@
--- Create the database for Agency 1
-CREATE DATABASE Agency1_Service_Web;
-
--- Switch to the database
-USE Agency1_Service_Web;
-
--- Create the Reservations table
-CREATE TABLE Reservations (
-    ReservationID INT AUTO_INCREMENT PRIMARY KEY,
-    OfferID INT NOT NULL,
-    HotelID INT NOT NULL,
-    CustomerName VARCHAR(255) NOT NULL,
-    CustomerContact VARCHAR(255) NOT NULL,
-    ReservationDate DATETIME NOT NULL,
-    Status VARCHAR(50) NOT NULL,
-    ReferenceNumber VARCHAR(255) UNIQUE NOT NULL
+-- Table: rooms
+CREATE TABLE rooms (
+    id UUID PRIMARY KEY, -- Unique identifier for each room
+    name VARCHAR(255) NOT NULL, -- Room name
+    size INTEGER NOT NULL, -- Room size in square feet
+    beds INTEGER NOT NULL, -- Number of beds in the room
+    price NUMERIC(10, 2) NOT NULL, -- Price per night
+    description TEXT, -- Room description
+    images JSONB, -- JSON array of image URLs
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- When the room was added
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Last update timestamp
 );
 
--- Create the Hotels table
-CREATE TABLE Hotels (
-    HotelID INT AUTO_INCREMENT PRIMARY KEY,
-    HotelURL VARCHAR(255),
+-- Table: room_availability
+CREATE TABLE room_availability (
+    id UUID PRIMARY KEY, -- Unique identifier for the availability entry
+    room_id UUID REFERENCES rooms(id) ON DELETE CASCADE, -- Room being tracked
+    start_date DATE NOT NULL, -- Start date of the availability period
+    end_date DATE NOT NULL, -- End date of the availability period
+    status VARCHAR(50) DEFAULT 'available', -- Status: 'available', 'booked', etc.
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Entry creation timestamp
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Last update timestamp
 );
 
 
--- Populate the Hotels table
-INSERT INTO Hotels (HotelName, Address, Phone)
-VALUES
-('Hotel Paradise', 'localhost:3000'),
-('Sunny Retreat', 'localhost:3001'),
-('Mountain View Inn', 'localhost:3002');
-
--- Populate the Reservations table
-INSERT INTO Reservations (OfferID, HotelID, CustomerName, CustomerContact, ReservationDate, Status, ReferenceNumber)
-VALUES
-(1, 1, 'John Doe', 'john.doe@example.com', '2024-12-01 14:30:00', 'Confirmed', 'RES123'),
-(2, 2, 'Jane Smith', 'jane.smith@example.com', '2024-12-01 15:00:00', 'Confirmed', 'RES124'),
-(3, 1, 'Alice Brown', 'alice.brown@example.com', '2024-12-02 10:00:00', 'Pending', 'RES125');
+CREATE TABLE agencies (
+    id UUID PRIMARY KEY, -- Unique identifier for the agency
+    name VARCHAR(255) NOT NULL, -- Agency name
+    token VARCHAR(255) NOT NULL UNIQUE, -- Authentication token
+    description TEXT -- Additional information about the agency
+);

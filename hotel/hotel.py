@@ -1,17 +1,45 @@
 from pathlib import Path
+from connexion import App
 from typing import Any, Dict, List, Optional
-from connexion import FlaskApp
 import configparser
-from connexion.options import SwaggerUIOptions
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker
 
+# Path configuration
 root_path = Path(__file__).parent
 
+# Load configurations from hotel.ini
 config = configparser.ConfigParser()
 config.read(root_path / "hotel.ini")
 
-app = FlaskApp(__name__)
-options = SwaggerUIOptions(swagger_ui_path="/docs")
-app.add_api(root_path / "hotel.yaml", swagger_ui_options=options)  # noqa: F821
+# Connexion App initialization
+app = App(__name__, specification_dir=str(root_path))
+options = {"swagger_ui_path": "/docs"}
+app.add_api("hotel.yaml", swagger_ui_options=options)
+
+# Database Configuration
+DATABASE_URI = (
+    f"postgresql://{config['DATABASE']['USER']}:{config['DATABASE']['PASSWORD']}@"
+    f"{config['DATABASE']['HOST']}:{config['DATABASE']['PORT']}/{config['DATABASE']['NAME']}"
+)
+
+# Create SQLAlchemy engine and session
+engine = create_engine(DATABASE_URI, echo=True)  # echo=True logs SQL queries
+SessionLocal = sessionmaker(bind=engine)
+
+
+# Function to test the connection
+def test_connection():
+    try:
+        with engine.connect() as connection:
+            result = connection.execute(text("SELECT 1"))
+            print(f"Database connected: {result.scalar()}")
+    except Exception as e:
+        print(f"Database connection failed: {e}")
+
+
+# Test the database connection
+test_connection()
 
 
 # Get all rooms

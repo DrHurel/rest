@@ -1,10 +1,17 @@
 # Use a lightweight Python image
 FROM python:3.10-slim
 
+# Set environment variables to avoid interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+
 # Set the working directory
 WORKDIR /app
 
-COPY ./docker/hotel-urban/ .
+ARG REST_SERVICE
+ARG SERVICE_ID
+ARG EXPOSED_PORT
+
 COPY ./docker/requirement.txt .
 
 # Install system dependencies, including PostgreSQL development libraries
@@ -18,12 +25,9 @@ RUN apt-get update && \
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirement.txt
 
-COPY ./hotel/hotel.py .
-COPY ./hotel/hotel.yaml .
-COPY ./hotel/hotel.ini .
-
+COPY ./${REST_SERVICE}/ .
 # Expose the Uvicorn port
-EXPOSE 5678
+EXPOSE ${EXPOSED_PORT}
 
 # Command to run Uvicorn
-CMD ["uvicorn", "hotel:app", "--port", "5678","--host","0.0.0.0"]
+CMD ["uvicorn", "${REST_SERVICE}:app", "--port", "8000","--host","0.0.0.0"]

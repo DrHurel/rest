@@ -3,3 +3,4 @@ connexion[swagger-ui]
 openapi-python-client
 sqlalchemy
 uvicorn
+psycopg2

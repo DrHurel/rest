@@ -1,4 +1,5 @@
 version: "3.9"
+
 services:
   hotel-heritage:
     build:
@@ -6,28 +7,143 @@ services:
       dockerfile: ./docker/hotel-heritage/Dockerfile
     ports:
       - "1234:1234"  # Maps to 8001 on the host
+    depends_on:
+      - db-hotel-heritage
+    environment:
+      DATABASE_URL: postgres://postgres:password@db-hotel-heritage:5432/heritage_db
+
+  db-hotel-heritage:
+    build:
+      context: ../
+      dockerfile: ./docker/databases/Dockerfile
+      args:
+        SERVICE_SCHEMA : hotel
+        DATA_FILE: heritage
+        EXPOSED_PORT : 9001
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: heritage_db
+    ports:
+      - "9001:5432"
+    volumes:
+      - heritage-data:/var/lib/postgresql/data
+
   hotel-mountain:
     build:
       context: ../
       dockerfile: ./docker/hotel-mountain/Dockerfile
     ports:
       - "2345:2345"  # Maps to 8001 on the host
+    depends_on:
+      - db-hotel-mountain
+    environment:
+      DATABASE_URL: postgres://postgres:password@db-hotel-mountain:5432/mountain_db
+
+  db-hotel-mountain:
+    build:
+      context: ../
+      dockerfile: ./docker/databases/Dockerfile
+      args:
+        SERVICE_SCHEMA : hotel
+        DATA_FILE: mountain
+        EXPOSED_PORT : 9002
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mountain_db
+    ports:
+      - "9002:5432"
+    volumes:
+      - mountain-data:/var/lib/postgresql/data
+
   hotel-palm:
     build:
       context: ../
       dockerfile: ./docker/hotel-palm/Dockerfile
     ports:
       - "3456:3456"  # Maps to 8001 on the host
+    depends_on:
+      - db-hotel-palm
+    environment:
+      DATABASE_URL: postgres://postgres:password@db-hotel-palm:5432/palm_db
+
+  db-hotel-palm:
+    build:
+      context: ../
+      dockerfile: ./docker/databases/Dockerfile
+      args:
+        SERVICE_SCHEMA : hotel
+        DATA_FILE: palm
+        EXPOSED_PORT : 9003
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: palm_db
+    ports:
+      - "9003:5432"
+    volumes:
+      - palm-data:/var/lib/postgresql/data
+
   hotel-serene:
     build:
       context: ../
       dockerfile: ./docker/hotel-serene/Dockerfile
     ports:
       - "4567:4567"  # Maps to 8001 on the host
+    depends_on:
+      - db-hotel-serene
+    environment:
+      DATABASE_URL: postgres://postgres:password@db-hotel-serene:5432/serene_db
+
+  db-hotel-serene:
+    build:
+      context: ../
+      dockerfile: ./docker/databases/Dockerfile
+      args:
+        SERVICE_SCHEMA : hotel
+        DATA_FILE: serene
+        EXPOSED_PORT : 9004
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: serene_db
+    ports:
+      - "9004:5432"
+    volumes:
+      - serene-data:/var/lib/postgresql/data
+
   hotel-urban:
     build:
       context: ../
       dockerfile: ./docker/hotel-urban/Dockerfile
     ports:
       - "5678:5678"  # Maps to 8001 on the host
-    
+    depends_on:
+      - db-hotel-urban
+    environment:
+      DATABASE_URL: postgres://postgres:password@db-hotel-urban:5432/urban_db
+
+  db-hotel-urban:
+    build:
+      context: ../
+      dockerfile: ./docker/databases/Dockerfile
+      args:
+        SERVICE_SCHEMA : hotel
+        DATA_FILE: urban
+        EXPOSED_PORT : 9005
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: urban_db
+    ports:
+      - "9005:5432"
+    volumes:
+      - urban-data:/var/lib/postgresql/data
+
+volumes:
+  heritage-data:
+  mountain-data:
+  palm-data:
+  serene-data:
+  urban-data:
