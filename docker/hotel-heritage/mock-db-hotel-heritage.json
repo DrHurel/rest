@@ -1,0 +1,35 @@
+{
+    "name": "Heritage Grand Hotel",
+    "rooms": [
+        {
+            "name": "Classic Queen Room",
+            "size": "350 sq. ft.",
+            "beds": "1 Queen",
+            "price_per_night": 180
+        },
+        {
+            "name": "Heritage King Room",
+            "size": "400 sq. ft.",
+            "beds": "1 King",
+            "price_per_night": 250
+        },
+        {
+            "name": "Junior Suite",
+            "size": "600 sq. ft.",
+            "beds": "1 King + Lounge Area",
+            "price_per_night": 350
+        },
+        {
+            "name": "Luxury Courtyard Suite",
+            "size": "800 sq. ft.",
+            "beds": "1 King + Private Patio",
+            "price_per_night": 450
+        },
+        {
+            "name": "Royal Grand Suite",
+            "size": "1,200 sq. ft.",
+            "beds": "2 Kings + Dining Area",
+            "price_per_night": 800
+        }
+    ]
+}

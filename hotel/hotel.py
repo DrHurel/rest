@@ -11,7 +11,7 @@ config.read(root_path / "hotel.ini")
 
 app = FlaskApp(__name__)
 options = SwaggerUIOptions(swagger_ui_path="/docs")
-app.add_api(root_path / ".." / "api" / "hotel.yaml", swagger_ui_options=options)  # noqa: F821
+app.add_api(root_path / "hotel.yaml", swagger_ui_options=options)  # noqa: F821
 
 
 # Get all rooms

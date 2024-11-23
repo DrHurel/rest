@@ -1,0 +1,5 @@
+connexion[flask]
+connexion[swagger-ui]
+openapi-python-client
+sqlalchemy
+uvicorn

@@ -1,0 +1,76 @@
+<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+  <div>
+    <label for="price-range"
+      >Price Range: ${priceRange[0]} - ${priceRange[1]}</label
+    >
+    <input type="range" name="price-range" id="price-range" class="mt-2" />
+    <div>
+      <label for="min-size">Minimum Size (m²)</label>
+      <input id="min-size" type="number" min={0} value={minSize} onChange={(e)
+      => setMinSize(Number(e.target.value))} className="mt-2" />
+    </div>
+    <div>
+      <label for="min-beds">Minimum Beds</label>
+      <input id="min-beds" type="number" min={1} value={minBeds} onChange={(e)
+      => setMinBeds(Number(e.target.value))} className="mt-2" />
+    </div>
+    <div>
+      <label for="country">Country</label>
+      <select onValueChange="{setSelectedCountry}">
+        <SelectTrigger id="country">
+          <SelectValue placeholder="Select country" />
+        </SelectTrigger>
+        <SelectContent>
+          {countries.map((country) => (
+          <SelectItem key="{country}" value="{country}"> {country} </SelectItem>
+          ))}
+        </SelectContent>
+      </select>
+    </div>
+    <div>
+      <label for="city">City</label>
+      <Select onValueChange="{setSelectedCity}">
+        <SelectTrigger id="city">
+          <SelectValue placeholder="Select city" />
+        </SelectTrigger>
+        <SelectContent>
+          {cities.map((city) => (
+          <SelectItem key="{city}" value="{city}"> {city} </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+    <div>
+      <label for="distance"
+        >Distance from City Center (km): {distanceRadius}</label
+      >
+      <Slider id="distance" min={0} max={20} step={0.5} value={[distanceRadius]}
+      onValueChange={(value) => setDistanceRadius(value[0])} className="mt-2" />
+    </div>
+    <div>
+      <label for="hotel-name">Hotel Name</label>
+      <input id="hotel-name" type="text" value={hotelName} onChange={(e) =>
+      setHotelName(e.target.value)} className="mt-2" placeholder="Search by
+      hotel name" />
+    </div>
+    <div className="lg:col-span-4">
+      <label>Features</label>
+      <div className="flex flex-wrap gap-4 mt-2">
+        {Object.entries(featureIcons).map(([feature, icon]) => (
+        <div key="{feature}" className="flex items-center">
+          <Checkbox id={`feature-${feature}`}
+          checked={selectedFeatures.includes(feature)} onCheckedChange={() =>
+          handleFeatureToggle(feature)} />
+          <label
+            for="{`feature-${feature}`}"
+            className="ml-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            {icon}
+            <span className="ml-1 capitalize">{feature}</span>
+          </label>
+        </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,35 @@
+{
+    "name": "Serene Bay Resort & Spa",
+    "rooms": [
+        {
+            "name": "Oceanview Deluxe Room",
+            "size": "400 sq. ft.",
+            "beds": "1 King",
+            "price_per_night": 250
+        },
+        {
+            "name": "Seaside Suite",
+            "size": "600 sq. ft.",
+            "beds": "1 King + Sofa Bed",
+            "price_per_night": 400
+        },
+        {
+            "name": "Family Garden Room",
+            "size": "700 sq. ft.",
+            "beds": "2 Queens",
+            "price_per_night": 300
+        },
+        {
+            "name": "Private Pool Villa",
+            "size": "1,200 sq. ft.",
+            "beds": "1 King",
+            "price_per_night": 800
+        },
+        {
+            "name": "Honeymoon Penthouse",
+            "size": "1,500 sq. ft.",
+            "beds": "1 King + Jacuzzi",
+            "price_per_night": 1200
+        }
+    ]
+}
