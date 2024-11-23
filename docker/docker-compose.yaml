@@ -10,7 +10,7 @@ services:
     depends_on:
       - db-hotel-heritage
     environment:
-      DATABASE_URL: postgres://postgres:password@db-hotel-heritage:5432/heritage_db
+      DATABASE_URL: postgres://postgres:password@db-hotel-heritage:9001/heritage_db
 
   db-hotel-heritage:
     build:
@@ -24,8 +24,9 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: heritage_db
+      PGPORT: 9001
     ports:
-      - "9001:5432"
+      - "9001:9001"
     volumes:
       - heritage-data:/var/lib/postgresql/data
 
@@ -53,7 +54,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: mountain_db
     ports:
-      - "9002:5432"
+      - "9002:9002"
     volumes:
       - mountain-data:/var/lib/postgresql/data
 
@@ -81,7 +82,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: palm_db
     ports:
-      - "9003:5432"
+      - "9003:9003"
     volumes:
       - palm-data:/var/lib/postgresql/data
 
@@ -109,7 +110,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: serene_db
     ports:
-      - "9004:5432"
+      - "9004:9004"
     volumes:
       - serene-data:/var/lib/postgresql/data
 
@@ -137,7 +138,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: urban_db
     ports:
-      - "9005:5432"
+      - "9005:9005"
     volumes:
       - urban-data:/var/lib/postgresql/data
 

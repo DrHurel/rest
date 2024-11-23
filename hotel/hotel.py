@@ -1,9 +1,15 @@
+import array
+import json
+from logging import Logger
 from pathlib import Path
-from connexion import App
+from connexion import FlaskApp
 from typing import Any, Dict, List, Optional
 import configparser
+from flask import jsonify
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
+from connexion.options import SwaggerUIOptions
+
 
 # Path configuration
 root_path = Path(__file__).parent
@@ -13,15 +19,13 @@ config = configparser.ConfigParser()
 config.read(root_path / "hotel.ini")
 
 # Connexion App initialization
-app = App(__name__, specification_dir=str(root_path))
-options = {"swagger_ui_path": "/docs"}
+app = FlaskApp(__name__, specification_dir=str(root_path))
+options = SwaggerUIOptions(swagger_ui_path="/docs")
+
 app.add_api("hotel.yaml", swagger_ui_options=options)
 
 # Database Configuration
-DATABASE_URI = (
-    f"postgresql://{config['DATABASE']['USER']}:{config['DATABASE']['PASSWORD']}@"
-    f"{config['DATABASE']['HOST']}:{config['DATABASE']['PORT']}/{config['DATABASE']['NAME']}"
-)
+DATABASE_URI = config["DATABASE"]["URI"]
 
 # Create SQLAlchemy engine and session
 engine = create_engine(DATABASE_URI, echo=True)  # echo=True logs SQL queries
@@ -65,7 +69,16 @@ def get_rooms(
     Returns:
         List[Dict[str, Any]]: A list of rooms matching the criteria.
     """
-    return [], 200
+
+    global engine
+
+    with engine.connect() as connection:
+        rooms = connection.execute(text("SELECT * FROM rooms")).fetchall()
+
+        rooms_list = [[data for data in room.tuple()] for room in rooms]
+
+        return jsonify(rooms_list), 200
+    return 501
 
 
 # Get room detailed information
