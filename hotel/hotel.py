@@ -9,9 +9,11 @@ from typing import Any, Dict, List, Optional
 import configparser
 import connexion
 from flask import jsonify
-from sqlalchemy import create_engine, text
+from sqlalchemy import Connection, create_engine, text
 from sqlalchemy.orm import sessionmaker
 from connexion.options import SwaggerUIOptions
+
+from utils.sql_function import create_reservation, is_room_available
 
 
 # Path configuration
@@ -109,17 +111,14 @@ def book_room(uuid: str, token: str, body) -> Dict[str, Any]:
     """
 
     with engine.connect() as connection:
-        reservation = connection.execute(
-            text(
-                "SELECT * FROM create_reservation('{}' ,'{}','{}')".format(
-                    uuid, body["start-date"], body["end-date"]
-                )
-            )
-        ).fetchall()
+        if not is_room_available(
+            uuid, body["start-date"], body["end-date"], connection
+        ):
+            return {"message": "room isn't available"}, 409
 
-        connection.commit()
+        reservation = create_reservation(uuid, body, connection)
 
-        return [dict(res._mapping) for res in reservation][0], 200
+        return dict(reservation[0]._mapping), 200
 
     return {}, 200
 

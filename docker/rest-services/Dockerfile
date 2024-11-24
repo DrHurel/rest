@@ -12,6 +12,7 @@ ARG REST_SERVICE
 ARG SERVICE_ID
 ARG EXPOSED_PORT
 
+COPY ./docker/${SERVICE_ID}/ . 
 COPY ./docker/requirement.txt .
 
 # Install system dependencies, including PostgreSQL development libraries
@@ -29,5 +30,9 @@ COPY ./${REST_SERVICE}/ .
 # Expose the Uvicorn port
 EXPOSE ${EXPOSED_PORT}
 
+
+ENV SERVICE=${REST_SERVICE}
+ENV PORT=${EXPOSED_PORT}
+
 # Command to run Uvicorn
-CMD ["uvicorn", "${REST_SERVICE}:app", "--port", "8000","--host","0.0.0.0"]
+CMD uvicorn $SERVICE:app --port $PORT --host "0.0.0.0"

@@ -40,3 +40,21 @@ BEGIN
     RETURN NEXT;
 END;
 $$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION is_room_available(
+    room_id UUID,
+    start_date DATE,
+    end_date DATE
+) RETURNS BOOLEAN AS $$
+BEGIN
+    -- Check for overlapping reservations
+    RETURN NOT EXISTS (
+        SELECT 1
+        FROM reservations
+        WHERE reservations.room_id = room_id
+          AND reservations.reservation_start_date < end_date
+          AND reservations.reservation_end_date > start_date
+    );
+END;
+$$ LANGUAGE plpgsql;

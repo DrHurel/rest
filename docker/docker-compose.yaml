@@ -4,7 +4,11 @@ services:
   hotel-heritage:
     build:
       context: ../
-      dockerfile: ./docker/hotel-heritage/Dockerfile
+      dockerfile: ./docker/rest-services/Dockerfile
+      args:
+        REST_SERVICE : hotel
+        SERVICE_ID : hotel-heritage
+        EXPOSED_PORT : 1234
     ports:
       - "1234:1234"  # Maps to 8001 on the host
     depends_on:
@@ -33,7 +37,11 @@ services:
   hotel-mountain:
     build:
       context: ../
-      dockerfile: ./docker/hotel-mountain/Dockerfile
+      dockerfile: ./docker/rest-services/Dockerfile
+      args:
+        REST_SERVICE : hotel
+        SERVICE_ID : hotel-mountain
+        EXPOSED_PORT : 2345
     ports:
       - "2345:2345"  # Maps to 8001 on the host
     depends_on:
@@ -61,7 +69,11 @@ services:
   hotel-palm:
     build:
       context: ../
-      dockerfile: ./docker/hotel-palm/Dockerfile
+      dockerfile: ./docker/rest-services/Dockerfile
+      args:
+        REST_SERVICE : hotel
+        SERVICE_ID : hotel-palm
+        EXPOSED_PORT : 3456
     ports:
       - "3456:3456"  # Maps to 8001 on the host
     depends_on:
@@ -89,7 +101,11 @@ services:
   hotel-serene:
     build:
       context: ../
-      dockerfile: ./docker/hotel-serene/Dockerfile
+      dockerfile: ./docker/rest-services/Dockerfile
+      args:
+        REST_SERVICE : hotel
+        SERVICE_ID : hotel-serene
+        EXPOSED_PORT : 4567
     ports:
       - "4567:4567"  # Maps to 8001 on the host
     depends_on:
@@ -117,7 +133,11 @@ services:
   hotel-urban:
     build:
       context: ../
-      dockerfile: ./docker/hotel-urban/Dockerfile
+      dockerfile: ./docker/rest-services/Dockerfile
+      args:
+        REST_SERVICE : hotel
+        SERVICE_ID : hotel-urban
+        EXPOSED_PORT : 5678
     ports:
       - "5678:5678"  # Maps to 8001 on the host
     depends_on:

@@ -135,17 +135,17 @@ paths:
               schema:
                 type: object
                 properties:
-                  rooms:
-                    type: object
-                    properties:
-                      id:
-                        type: string
-                      name:
-                        type: string
-                      size:
-                        type: integer
-                      price:
-                        type: number
+                  id:
+                    type: string
+                  reservation_end_date:
+                    type: string
+                    format: date
+                  reservation_start_date:
+                    type: string
+                    format: date
+                  room_id:
+                    type: string
+
     delete:
       operationId: hotel.cancel_room_reservation
       parameters:
