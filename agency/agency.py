@@ -1,16 +1,21 @@
 from datetime import date
 from pathlib import Path
-from urllib import response
 from connexion import FlaskApp
 from typing import Any, Dict, List, Optional
 import configparser
 import httpx
-from sqlalchemy import create_engine, text, values
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine, text
 from connexion.options import SwaggerUIOptions
 from generated.rest_hotel_api_client.client import Client
-from generated.rest_hotel_api_client.api.default import hotel_get_rooms
+from generated.rest_hotel_api_client.api.default import (
+    hotel_get_room_details,
+    hotel_book_room,
+    hotel_cancel_room_reservation,
+    hotel_update_room_reservation,
+    hotel_get_hotel_info,
+)
 
+from utils.tools import fetch_rooms, get_hotel_domain
 
 # Path configuration
 root_path = Path(__file__).parent
@@ -31,7 +36,6 @@ DATABASE_URI = config["DATABASE"]["URI"]
 engine = create_engine(DATABASE_URI, echo=True)  # echo=True logs SQL queries
 
 
-# Get all rooms
 def get_rooms(
     start_date: Optional[str] = date.today(),
     end_date: Optional[str] = None,
@@ -41,115 +45,219 @@ def get_rooms(
     beds: Optional[int] = 1,
 ) -> List[Dict[str, Any]]:
     """
-    Retrieve a list of rooms with optional filters.
-
-    Parameters:
-        start_date (str, optional): Start date for room availability filter.
-        end_date (str, optional): End date for room availability filter.
-        minsize (int, optional): Minimum room size filter.
-        minprize (float, optional): Minimum price filter.
-        maxprice (float, optional): Maximum price filter.
-        beds (int, optional): Number of beds filter.
-
-    Returns:
-        List[Dict[str, Any]]: A list of rooms matching the criteria.
+    Retrieve a list of rooms from all connected hotels with optional filters.
     """
     services = []
     with engine.connect() as connection:
         hotels = connection.execute(text("SELECT domain FROM hotels")).fetchall()
-
         services = [hotel._mapping["domain"] for hotel in hotels]
 
     res = []
-    for service in services:
-        with Client(f"http://{service}/api/v1") as hotelClient:
-            try:
-                rooms = hotel_get_rooms.sync(
-                    start_date=start_date,
-                    minsize=minsize,
-                    minprize=minprize,
-                    maxprice=maxprice,
-                    beds=beds,
-                    client=hotelClient,
-                )
-                for room in rooms:
-                    value = room.to_dict()
-                    value["id"] = "{}-{}".format(service, value.get("id"))
-                    res.append(value)
-            except httpx.ConnectError as e:
-                return {"error": f"Connection to hotel API failed : {str(e)}"}, 500
-            except Exception as e:
-                return {"error": f"An unexpected error occurred: {str(e)}"}, 500
+    try:
+        fetch_rooms(
+            start_date, end_date, minsize, minprize, maxprice, beds, services, res
+        )
+    except httpx.ConnectError as e:
+        return {"error": f"Connection to hotel API failed: {str(e)}"}, 500
+    except Exception as e:
+        return {"error": f"An unexpected error occurred: {str(e)}"}, 500
     return res, 200
 
 
-# Get room detailed information
 def get_room_details(uuid: str) -> Dict[str, Any]:
     """
     Retrieve detailed information for a specific room.
-
-    Parameters:
-        uuid (str): The unique identifier of the room.
-
-    Returns:
-        Dict[str, Any]: Detailed information about the room.
     """
+    try:
+        domain, original_id = get_hotel_domain(uuid)
 
-    return [], 200
+        with Client(f"http://{domain}/api/v1") as hotelClient:
+            try:
+                room_details = hotel_get_room_details.sync(
+                    uuid=original_id, client=hotelClient
+                )
+
+                details = room_details.to_dict()
+                details["id"] = f"{domain}-{details.get('id')}"
+                return details, 200
+
+            except httpx.ConnectError as e:
+                return {"error": f"Connection to hotel API failed: {str(e)}"}, 500
+            except Exception as e:
+                return {"error": f"An unexpected error occurred: {str(e)}"}, 500
+    except ValueError as e:
+        return {"error": str(e)}, 400
 
 
-# Book a room
-def book_room(uuid: str, token: str, body) -> Dict[str, Any]:
+def book_room(uuid: str, token: str, body: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Book a specific room.
-
-    Parameters:
-        uuid (str): The unique identifier of the room to be booked.
-
-    Returns:
-        Dict[str, Any]: Response data confirming the booking.
+    Book a specific room through the hotel's API.
     """
+    try:
+        domain, original_id = get_hotel_domain(uuid)
 
-    return {}, 200
+        with Client(f"http://{domain}/api/v1") as hotelClient:
+            try:
+                # Forward the booking request to the hotel
+                booking_result = hotel_book_room.sync(
+                    uuid=original_id, token=token, json_body=body, client=hotelClient
+                )
+
+                # Store the booking in our database
+                with engine.connect() as connection:
+                    query = """
+                        INSERT INTO bookings (hotel_domain, room_id, booking_id, guest_name, guest_email, start_date, end_date)
+                        VALUES (:domain, :room_id, :booking_id, :guest_name, :guest_email, :start_date, :end_date)
+                        RETURNING id
+                    """
+                    params = {
+                        "domain": domain,
+                        "room_id": original_id,
+                        "booking_id": booking_result.get("id"),
+                        "guest_name": body.get("guest-name"),
+                        "guest_email": body.get("guest-email"),
+                        "start_date": body.get("start-date"),
+                        "end_date": body.get("end-date"),
+                    }
+                    connection.execute(text(query), params)
+                    connection.commit()
+
+                result = booking_result.to_dict()
+                result["id"] = f"{domain}-{result.get('id')}"
+                return result, 200
+
+            except httpx.ConnectError as e:
+                return {"error": f"Connection to hotel API failed: {str(e)}"}, 500
+            except Exception as e:
+                return {"error": f"An unexpected error occurred: {str(e)}"}, 500
+    except ValueError as e:
+        return {"error": str(e)}, 400
 
 
 def cancel_room_reservation(uuid: str, token: str) -> Dict[str, Any]:
     """
-    Book a specific room.
-
-    Parameters:
-        uuid (str): The unique identifier of the room to be booked.
-
-    Returns:
-        Dict[str, Any]: Response data confirming the booking.
+    Cancel a room reservation through the hotel's API.
     """
-    return 200
+    try:
+        domain, original_id = get_hotel_domain(uuid)
+
+        with Client(f"http://{domain}/api/v1") as hotelClient:
+            try:
+                # Forward the cancellation request to the hotel
+                cancel_result = hotel_cancel_room_reservation.sync(
+                    uuid=original_id, token=token, client=hotelClient
+                )
+
+                # Update our database
+                with engine.connect() as connection:
+                    query = """
+                        UPDATE bookings 
+                        SET status = 'cancelled', 
+                            cancelled_at = CURRENT_TIMESTAMP 
+                        WHERE hotel_domain = :domain 
+                        AND booking_id = :booking_id
+                    """
+                    connection.execute(
+                        text(query), {"domain": domain, "booking_id": original_id}
+                    )
+                    connection.commit()
+
+                return cancel_result.to_dict(), 200
+
+            except httpx.ConnectError as e:
+                return {"error": f"Connection to hotel API failed: {str(e)}"}, 500
+            except Exception as e:
+                return {"error": f"An unexpected error occurred: {str(e)}"}, 500
+    except ValueError as e:
+        return {"error": str(e)}, 400
 
 
-def update_room_reservation(uuid: str, token: str) -> Dict[str, Any]:
+def update_room_reservation(
+    uuid: str, token: str, body: Dict[str, Any]
+) -> Dict[str, Any]:
     """
-    Book a specific room.
-
-    Parameters:
-        uuid (str): The unique identifier of the room to be booked.
-
-    Returns:
-        Dict[str, Any]: Response data confirming the booking.
+    Update a room reservation through the hotel's API.
     """
-    return 200
+    try:
+        domain, original_id = get_hotel_domain(uuid)
+
+        with Client(f"http://{domain}/api/v1") as hotelClient:
+            try:
+                # Forward the update request to the hotel
+                update_result = hotel_update_room_reservation.sync(
+                    uuid=original_id, token=token, json_body=body, client=hotelClient
+                )
+
+                # Update our database
+                with engine.connect() as connection:
+                    update_fields = []
+                    params = {"domain": domain, "booking_id": original_id}
+
+                    for field in [
+                        "start-date",
+                        "end-date",
+                        "guest-name",
+                        "guest-email",
+                    ]:
+                        if field in body:
+                            db_field = field.replace("-", "_")
+                            update_fields.append(f"{db_field} = :{db_field}")
+                            params[db_field] = body[field]
+
+                    if update_fields:
+                        query = f"""
+                            UPDATE bookings 
+                            SET {', '.join(update_fields)},
+                                updated_at = CURRENT_TIMESTAMP
+                            WHERE hotel_domain = :domain 
+                            AND booking_id = :booking_id
+                        """
+                        connection.execute(text(query), params)
+                        connection.commit()
+
+                result = update_result.to_dict()
+                result["id"] = f"{domain}-{result.get('id')}"
+                return result, 200
+
+            except httpx.ConnectError as e:
+                return {"error": f"Connection to hotel API failed: {str(e)}"}, 500
+            except Exception as e:
+                return {"error": f"An unexpected error occurred: {str(e)}"}, 500
+    except ValueError as e:
+        return {"error": str(e)}, 400
 
 
-# Get hotel information
 def get_agency_info() -> Dict[str, Any]:
-    global config
-
     """
-    Retrieve general information about the hotel.
-
-    Returns:
-        Dict[str, Any]: Information about the hotel.
+    Retrieve general information about the agency.
     """
-    return {
-        "name": config["agency_description"]["name"],
-        "description": config["agency_description"]["description"],
-    }, 200
+    try:
+        # Get agency information from config
+        agency_info = {
+            "name": config["agency_description"]["name"],
+            "description": config["agency_description"]["description"],
+        }
+
+        # Get list of connected hotels
+        connected_hotels = []
+        with engine.connect() as connection:
+            hotels = connection.execute(text("SELECT domain FROM hotels")).fetchall()
+
+            # Get information for each connected hotel
+            for hotel in hotels:
+                domain = hotel._mapping["domain"]
+                with Client(f"http://{domain}/api/v1") as hotelClient:
+                    try:
+                        hotel_info = hotel_get_hotel_info.sync(client=hotelClient)
+                        connected_hotels.append(
+                            {"domain": domain, **hotel_info.to_dict()}
+                        )
+                    except (httpx.ConnectError, Exception):
+                        # Skip hotels that are not responding
+                        continue
+
+        agency_info["connected_hotels"] = connected_hotels
+        return agency_info, 200
+
+    except Exception as e:
+        return {"error": f"An unexpected error occurred: {str(e)}"}, 500

@@ -5,3 +5,4 @@ connexion[swagger-ui]
 openapi-python-client
 sqlalchemy
 psycopg2
+jwt

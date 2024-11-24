@@ -4,3 +4,4 @@ openapi-python-client
 sqlalchemy
 uvicorn
 psycopg2
+jwt
