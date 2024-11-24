@@ -52,21 +52,18 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  rooms:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                        name:
-                          type: string
-                        size:
-                          type: integer
-                        price:
-                          type: number
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    size:
+                      type: integer
+                    price:
+                      type: number
 
   /room/{uuid}:
     get:

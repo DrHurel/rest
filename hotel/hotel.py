@@ -1,15 +1,8 @@
-import array
-import json
-from logging import Logger
-import os
 from pathlib import Path
-from uuid import UUID
 from connexion import FlaskApp
 from typing import Any, Dict, List, Optional
 import configparser
-import connexion
-from flask import jsonify
-from sqlalchemy import Connection, create_engine, text
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from connexion.options import SwaggerUIOptions
 
@@ -43,7 +36,7 @@ def get_rooms(
     end_date: Optional[str] = None,
     minsize: Optional[int] = 0,
     minprize: Optional[float] = 0,
-    maxprice: Optional[float] = 0b11111111,
+    maxprice: Optional[float] = 100000000,
     beds: Optional[int] = 1,
 ) -> List[Dict[str, Any]]:
     """

@@ -10,7 +10,7 @@ services:
         SERVICE_ID : hotel-heritage
         EXPOSED_PORT : 1234
     ports:
-      - "1234:1234"  # Maps to 8001 on the host
+      - "1234:1234"  
     depends_on:
       - db-hotel-heritage
     environment:
@@ -28,7 +28,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: heritage_db
-      PGPORT: 9001
     ports:
       - "9001:9001"
     volumes:
@@ -43,7 +42,7 @@ services:
         SERVICE_ID : hotel-mountain
         EXPOSED_PORT : 2345
     ports:
-      - "2345:2345"  # Maps to 8001 on the host
+      - "2345:2345"  
     depends_on:
       - db-hotel-mountain
     environment:
@@ -75,7 +74,7 @@ services:
         SERVICE_ID : hotel-palm
         EXPOSED_PORT : 3456
     ports:
-      - "3456:3456"  # Maps to 8001 on the host
+      - "3456:3456"  
     depends_on:
       - db-hotel-palm
     environment:
@@ -107,7 +106,7 @@ services:
         SERVICE_ID : hotel-serene
         EXPOSED_PORT : 4567
     ports:
-      - "4567:4567"  # Maps to 8001 on the host
+      - "4567:4567"  
     depends_on:
       - db-hotel-serene
     environment:
@@ -139,7 +138,7 @@ services:
         SERVICE_ID : hotel-urban
         EXPOSED_PORT : 5678
     ports:
-      - "5678:5678"  # Maps to 8001 on the host
+      - "5678:5678"  
     depends_on:
       - db-hotel-urban
     environment:
@@ -162,9 +161,51 @@ services:
     volumes:
       - urban-data:/var/lib/postgresql/data
 
+
+  agency-urban:
+    build:
+      context: ../
+      dockerfile: ./docker/rest-services/Dockerfile
+      args:
+        REST_SERVICE : agency
+        SERVICE_ID : agency-urban
+        EXPOSED_PORT : 5555
+    depends_on:
+      - hotel-urban
+      - hotel-serene
+      - hotel-mountain
+      - hotel-palm
+      - hotel-heritage
+    ports:
+      - "5555:5555"  
+    environment:
+      DATABASE_URL: postgres://postgres:password@db-hotel-urban:5432/urban_db
+
+  agency-luxe:
+    build:
+      context: ../
+      dockerfile: ./docker/rest-services/Dockerfile
+      args:
+        REST_SERVICE : agency
+        SERVICE_ID : agency-luxe
+        EXPOSED_PORT : 4444
+    depends_on:
+      - hotel-urban
+      - hotel-serene
+      - hotel-mountain
+      - hotel-palm
+      - hotel-heritage
+    ports:
+      - "4444:4444"  
+    environment:
+      DATABASE_URL: postgres://postgres:password@db-hotel-urban:5432/urban_db
+
+
 volumes:
   heritage-data:
   mountain-data:
   palm-data:
   serene-data:
   urban-data:
+
+
