@@ -7,7 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { AgencyService } from '../../services/agency.service';
 
 @Component({
@@ -56,13 +56,15 @@ export class BookingComponent implements OnInit {
       };
 
       const token = 'secret';
+      let params = new HttpParams();
+      params.set("token", token)
 
       this.http
         .post(
           `${this.agencyService.getAgencyUrl(this.agency)}/room/${this.roomId}/book`,
           bookingData,
           {
-            params: { token },
+            params: params,
           }
         )
         .subscribe({
