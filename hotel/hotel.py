@@ -90,8 +90,6 @@ def book_room(uuid: str, token: str, body: Dict[str, Any]) -> Dict[str, Any]:
     Book a specific room.
     """
     try:
-        print("debug")
-        # Business logic validation for dates
         is_valid, error = validate_booking_dates(
             datetime.datetime.fromisoformat(body["start-date"]),
             datetime.datetime.fromisoformat(body["end-date"]),
@@ -99,16 +97,14 @@ def book_room(uuid: str, token: str, body: Dict[str, Any]) -> Dict[str, Any]:
         if not is_valid:
             return {"message": error}, 400
 
-        print("test")
+        print(f"test {uuid}")
         with engine.connect() as connection:
             if not is_room_available(
                 uuid, body["start-date"], body["end-date"], connection
             ):
                 return {"message": "Room isn't available for the selected dates"}, 409
-            print("test 3")
-            # Create reservation
+
             reservation = create_reservation(uuid, body, connection)
-            print(reservation)
             if not reservation:
                 return {"message": "Failed to create reservation"}, 500
 

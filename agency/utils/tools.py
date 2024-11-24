@@ -5,7 +5,7 @@ from generated.rest_hotel_api_client.api.default import hotel_get_rooms
 def get_hotel_domain(room_id: str) -> tuple[str, str]:
     """Extract hotel domain and original room ID from composite ID"""
     try:
-        domain, original_id = room_id.split("|", 1)
+        [domain, original_id] = room_id.split("_")
         return domain, original_id
     except ValueError:
         raise ValueError("Invalid room ID format")
@@ -39,5 +39,5 @@ def fetch_rooms(start_date, end_date, minsize, minprize, maxprice, beds, service
                 value["price"] = int(value["price"]) + int(value["price"]) * float(
                     service["rooms_margins"]
                 )
-                value["id"] = "{}|{}".format(service["domain"], value.get("id"))
+                value["id"] = "{}_{}".format(service["domain"], value.get("id"))
                 res.append(value)

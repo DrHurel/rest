@@ -132,12 +132,16 @@ def book_room(uuid: str, token: str, body: Dict[str, Any]) -> Dict[str, Any]:
 
                     params = {
                         "reservation_id": booking_result.id,
-                        "hotel_id": domain,  # Assuming "domain" corresponds to the hotel ID
+                        "hotel_id": connection.execute(
+                            text(
+                                f"""SELECT hotel_id from hotels WHERE domain = '{domain}'"""
+                            )
+                        ).scalar(),  # Assuming "domain" corresponds to the hotel ID
                         "customer_name": body.get(
-                            "guest-name"
+                            "guest-name", "test"
                         ),  # guest_name -> customer_name
                         "customer_email": body.get(
-                            "guest-email"
+                            "guest-email", "test"
                         ),  # guest_email -> customer_email
                         "check_in_date": body.get(
                             "start-date"
@@ -236,7 +240,7 @@ def update_room_reservation(
 
                     if update_fields:
                         query = f"""
-                            UPDATE bookings 
+                            UPDATE reservations 
                             SET {', '.join(update_fields)},
                                 updated_at = CURRENT_TIMESTAMP
                             WHERE hotel_domain = :domain 
