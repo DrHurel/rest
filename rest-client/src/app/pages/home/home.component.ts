@@ -78,9 +78,10 @@ export class HomeComponent implements OnInit {
     this.adjustColumns(window.innerWidth);
   }
 
-  roomsUpdate(arg0: any) {
+  roomsUpdate(data: Array<Room>) {
 
-    this.rooms.update(() => arg0)
+    console.log(data)
+    this.rooms.update(() => data)
   }
 
 

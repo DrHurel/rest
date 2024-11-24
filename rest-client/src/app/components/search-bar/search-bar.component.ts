@@ -51,7 +51,8 @@ export class SearchBarComponent {
 
   private roomService = inject(RoomService);
 
-  @Output() rooms = new EventEmitter<Array<Room>>(); // EventEmitter to handle booking action
+  @Output()
+  rooms = new EventEmitter<Array<Room>>(); // EventEmitter to handle booking action
 
 
   isLoading = signal<boolean>(false);
