@@ -1,0 +1,193 @@
+# http://json-schema.org/draft-04/schema#
+
+openapi: "3.0.0"
+info:
+  title: "RestAgency api"
+  description: "A description of your API"
+  version: "1.0.0"
+servers:
+  - url: http://localhost:1234/api/v1
+paths:
+  /rooms:
+    get:
+      operationId: agency.get_rooms
+      description: fetch rooms with optional filter.
+      parameters:
+        - name: start-date
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: end-date
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: minsize
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: minprize
+          in: query
+          required: false
+          schema:
+            type: number
+        - name: maxprice
+          in: query
+          required: false
+          schema:
+            type: number
+        - name: beds
+          in: query
+          required: false
+          schema:
+            type: integer
+
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rooms:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        size:
+                          type: integer
+                        price:
+                          type: number
+
+  /room/{uuid}:
+    get:
+      operationId: agency.get_room_details
+      description: Get room detailed information.
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rooms:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      name:
+                        type: string
+                      size:
+                        type: integer
+                      price:
+                        type: number
+  /room/{uuid}/book:
+    post:
+      operationId: agency.book_room
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: token
+          description: the authentication token of the agency
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: the booking
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                start-date:
+                  type: string
+                  format: date
+                end-date:
+                  type: string
+                  format: date
+
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  reservation_end_date:
+                    type: string
+                    format: date
+                  reservation_start_date:
+                    type: string
+                    format: date
+                  room_id:
+                    type: string
+
+    delete:
+      operationId: agency.cancel_room_reservation
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: token
+          description: the authentication token of the agency
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ok
+    patch:
+      operationId: agency.update_room_reservation
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: token
+          description: the authentication token of the agency
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ok
+
+  /agency/info:
+    get:
+      operationId: agency.get_agency_info
+      responses:
+        "200":
+          description: Agency information.
+          content:
+            application/json:
+              schema:
+                type: object
