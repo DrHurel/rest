@@ -225,7 +225,7 @@ services:
       dockerfile: ./docker/databases/Dockerfile
       args:
         SERVICE_SCHEMA : agency
-        DATA_FILE: agency-urban
+        DATA_FILE: agency-luxe
         EXPOSED_PORT : 9007
     environment:
       POSTGRES_USER: postgres

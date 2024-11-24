@@ -28,9 +28,7 @@ app.add_api("agency.yaml", swagger_ui_options=options)
 # Database Configuration
 DATABASE_URI = config["DATABASE"]["URI"]
 
-# Create SQLAlchemy engine and session
-# engine = create_engine(DATABASE_URI, echo=True)  # echo=True logs SQL queries
-# SessionLocal = sessionmaker(bind=engine)
+engine = create_engine(DATABASE_URI, echo=True)  # echo=True logs SQL queries
 
 
 # Get all rooms
@@ -56,7 +54,12 @@ def get_rooms(
     Returns:
         List[Dict[str, Any]]: A list of rooms matching the criteria.
     """
-    services = ["hotel-heritage:1234", "hotel-mountain:2345", "hotel-palm:3456"]
+    services = []
+    with engine.connect() as connection:
+        hotels = connection.execute(text("SELECT domain FROM hotels")).fetchall()
+
+        services = [hotel._mapping["domain"] for hotel in hotels]
+
     res = []
     for service in services:
         with Client(f"http://{service}/api/v1") as hotelClient:
