@@ -1,0 +1,33 @@
+<div class="booking-container">
+    <h1>Book Your Room</h1>
+    <p>Room ID: {{ roomId }}</p>
+    <p>Agency: {{ agency }}</p>
+  
+    <form [formGroup]="bookingForm" (ngSubmit)="submitBooking()">
+      <mat-form-field class="full-width">
+        <mat-label>Start Date</mat-label>
+        <input matInput [matDatepicker]="startPicker" formControlName="startDate" />
+        <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+        <mat-datepicker #startPicker></mat-datepicker>
+      </mat-form-field>
+  
+      <mat-form-field class="full-width">
+        <mat-label>End Date</mat-label>
+        <input matInput [matDatepicker]="endPicker" formControlName="endDate" />
+        <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+        <mat-datepicker #endPicker></mat-datepicker>
+      </mat-form-field>
+  
+      <mat-form-field class="full-width">
+        <mat-label>Your Name</mat-label>
+        <input matInput formControlName="name" placeholder="Enter your name" />
+      </mat-form-field>
+  
+      <div class="form-actions">
+        <button mat-raised-button color="primary" [disabled]="!bookingForm.valid">
+          Submit Booking
+        </button>
+      </div>
+    </form>
+  </div>
+  
