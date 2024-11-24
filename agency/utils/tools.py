@@ -13,7 +13,7 @@ def get_hotel_domain(room_id: str) -> tuple[str, str]:
 
 def fetch_rooms(start_date, end_date, minsize, minprize, maxprice, beds, services, res):
     for service in services:
-        with Client(f"http://{service}/api/v1") as hotelClient:
+        with Client("http://{}/api/v1".format(service["domain"])) as hotelClient:
             rooms = []
             if end_date is not None:
                 rooms = hotel_get_rooms.sync(
@@ -36,5 +36,8 @@ def fetch_rooms(start_date, end_date, minsize, minprize, maxprice, beds, service
                 )
             for room in rooms:
                 value = room.to_dict()
-                value["id"] = f"{service}|{value.get('id')}"
+                value["price"] = int(value["price"]) + int(value["price"]) * float(
+                    service["rooms_margins"]
+                )
+                value["id"] = "{}|{}".format(service["domain"], value.get("id"))
                 res.append(value)

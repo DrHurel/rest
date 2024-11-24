@@ -56,8 +56,10 @@ def get_rooms(
     services = []
     try:
         with engine.connect() as connection:
-            hotels = connection.execute(text("SELECT domain FROM hotels")).fetchall()
-            services = [hotel._mapping["domain"] for hotel in hotels]
+            hotels = connection.execute(
+                text("SELECT domain,rooms_margins FROM hotels")
+            ).fetchall()
+            services = [hotel._mapping for hotel in hotels]
     except Exception as e:
         return {"error": f"An unexpected error occurred: {str(e)}"}, 500
 

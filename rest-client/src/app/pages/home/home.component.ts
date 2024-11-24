@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, HostListener, OnInit, inject, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { RoomService } from '../../services/room.service'; // Import the RoomService
 
 // Material Imports
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -17,17 +16,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { state } from '@angular/animations';
+import { Room } from '../../models/room';
 
-interface Room {
-  id: string;
-  name: string;
-  size: number;
-  price: number;
-  beds: number;
-}
-
-type RoomsResponse = Room[];
 
 
 interface RoomFilters {
@@ -38,8 +28,6 @@ interface RoomFilters {
   maxprice?: number;
   beds?: number;
 }
-
-const API_URL = 'http://localhost:5555/api/v1';
 
 @Component({
   selector: 'app-home',
@@ -66,7 +54,7 @@ const API_URL = 'http://localhost:5555/api/v1';
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
-  private http = inject(HttpClient);
+  private roomService = inject(RoomService);
   private datePipe = inject(DatePipe);
 
   searchForm = new FormGroup({
@@ -92,37 +80,8 @@ export class HomeComponent implements OnInit {
     this.fetchRooms();
   }
 
-  getRooms(filters: RoomFilters): Observable<RoomsResponse> {
-    let params = new HttpParams();
-
-    if (filters.startDate) {
-      params = params.set('start-date', filters.startDate);
-    }
-    if (filters.endDate) {
-      params = params.set('end-date', filters.endDate);
-    }
-    if (filters.minsize) {
-      params = params.set('minsize', filters.minsize.toString());
-    }
-    if (filters.minprize) {
-      params = params.set('minprize', filters.minprize.toString());
-    }
-    if (filters.maxprice) {
-      params = params.set('maxprice', filters.maxprice.toString());
-    }
-    if (filters.beds) {
-      params = params.set('beds', filters.beds.toString());
-    }
-
-    let res;
-
-    res = this.http.get<RoomsResponse>(`${API_URL}/rooms`, { params });
-    console.log(res)
-    return res;
-  }
-
   fetchRooms() {
-
+    this.isLoading.update(() => true);
     this.error = null;
 
     const filters: RoomFilters = {
@@ -134,14 +93,15 @@ export class HomeComponent implements OnInit {
       minsize: this.searchForm.get('minSize')?.value || undefined
     };
 
-    this.getRooms(filters).subscribe({
+    // Fetch rooms using RoomService
+    this.roomService.fetchRooms(filters).subscribe({
       next: (response) => {
         this.rooms.update(() => response);
         this.totalRooms.update(() => response.length);
         this.isLoading.update(() => false);
       },
       error: (error) => {
-        this.error = 'Failed to fetch rooms. Please try again later.';
+        this.error = error;
         this.isLoading.update(() => false);
         console.error('Error fetching rooms:', error);
       }
@@ -149,7 +109,7 @@ export class HomeComponent implements OnInit {
   }
 
   search() {
-    this.isLoading.update(() => true)
+    this.isLoading.update(() => true);
     this.fetchRooms();
   }
 
