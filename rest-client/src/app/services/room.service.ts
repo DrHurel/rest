@@ -1,33 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, forkJoin } from 'rxjs';
-import { Room } from '../models/room';
+import { Room, RoomFilters } from '../models/room';
+import { Agency } from '../models/agency';
+import { AgencyService } from './agency.service';
 
 
-interface Agency {
-  url: string;
-  name: string;
-}
-
-interface RoomFilters {
-  startDate?: string;
-  endDate?: string;
-  minsize?: number;
-  minprize?: number;
-  maxprice?: number;
-  beds?: number;
-}
-
-const AGENCIES_API_URLS: Array<Agency> = [
-  { url: 'http://localhost:5555/api/v1', name: "luxe" },
-  { url: 'http://localhost:4444/api/v1', name: "urban" }
-];
 
 @Injectable({
   providedIn: 'root',
 })
 export class RoomService {
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private agencyService: AgencyService) { }
 
   private getRoomsFromAgency(agency: Agency, filters: RoomFilters): Observable<Room[]> {
     let params = new HttpParams();
@@ -68,7 +52,7 @@ export class RoomService {
 
   public fetchRooms(filters: RoomFilters): Observable<Room[]> {
     // Create an array of observables for all agency URLs
-    const agencyRequests = AGENCIES_API_URLS.map(agency =>
+    const agencyRequests = this.agencyService.getAgencies().map(agency =>
       this.getRoomsFromAgency(agency, filters)
     );
 

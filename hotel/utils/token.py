@@ -9,10 +9,9 @@ def validate_token(token: str, JWT_SECRET) -> Tuple[bool, Dict[str, Any]]:  # no
     Validate JWT token and return decoded payload.
     """
     try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])  # noqa: F821
-        return True, payload
-    except jwt.InvalidTokenError:
-        return False, {}
+        return token == JWT_SECRET, None
+    except Exception as e:
+        return False, e
 
 
 def require_valid_token(TOKEN):

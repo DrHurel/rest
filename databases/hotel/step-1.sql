@@ -43,7 +43,7 @@ $$ LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION is_room_available(
-    room_id UUID,
+    r_id UUID,
     start_date DATE,
     end_date DATE
 ) RETURNS BOOLEAN AS $$
@@ -52,7 +52,7 @@ BEGIN
     RETURN NOT EXISTS (
         SELECT 1
         FROM reservations
-        WHERE reservations.room_id = room_id
+        WHERE reservations.room_id = r_id
           AND reservations.reservation_start_date < end_date
           AND reservations.reservation_end_date > start_date
     );

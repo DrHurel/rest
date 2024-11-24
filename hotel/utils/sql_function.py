@@ -26,7 +26,7 @@ def create_reservation(uuid, body, connection: Connection):
     ).fetchone()
     connection.commit()
 
-    return res[0]
+    return res
 
 
 def filter_by_availability(start_date, end_date, connection, rooms):

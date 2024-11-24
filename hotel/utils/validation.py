@@ -1,4 +1,5 @@
 from datetime import datetime
+import time
 from typing import Tuple
 
 
@@ -8,10 +9,12 @@ def validate_booking_dates(
     """
     Validate booking date logic.
     """
+    print("ézdvaba")
     if start_date >= end_date:
         return False, "End date must be after start date"
 
     if start_date < datetime.now():
         return False, "Start date cannot be in the past"
 
+    print("testagazd")
     return True, ""

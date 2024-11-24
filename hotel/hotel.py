@@ -1,11 +1,11 @@
+import datetime
 from pathlib import Path
+import time
 from connexion import FlaskApp
 from typing import Any, Dict, List, Optional, Tuple
 import configparser
 from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
 from connexion.options import SwaggerUIOptions
-from datetime import datetime
 from utils.validation import validate_booking_dates
 from utils.token import require_valid_token, validate_token
 from utils.sql_function import (
@@ -90,24 +90,29 @@ def book_room(uuid: str, token: str, body: Dict[str, Any]) -> Dict[str, Any]:
     Book a specific room.
     """
     try:
+        print("debug")
         # Business logic validation for dates
-        is_valid, error = validate_booking_dates(body["start-date"], body["end-date"])
+        is_valid, error = validate_booking_dates(
+            datetime.datetime.fromisoformat(body["start-date"]),
+            datetime.datetime.fromisoformat(body["end-date"]),
+        )
         if not is_valid:
             return {"message": error}, 400
 
+        print("test")
         with engine.connect() as connection:
             if not is_room_available(
                 uuid, body["start-date"], body["end-date"], connection
             ):
                 return {"message": "Room isn't available for the selected dates"}, 409
-
+            print("test 3")
             # Create reservation
             reservation = create_reservation(uuid, body, connection)
-
+            print(reservation)
             if not reservation:
                 return {"message": "Failed to create reservation"}, 500
 
-            return dict(reservation[0]._mapping), 200
+            return dict(reservation._mapping), 200
 
     except Exception as e:
         return {"message": f"Database error: {str(e)}"}, 500
@@ -148,7 +153,6 @@ def update_room_reservation(
         with engine.connect() as connection:
             # Verify reservation exists and belongs to user
             is_valid, payload = validate_token(token)
-            user_id = payload.get("user_id")
 
             # Check if reservation exists and is active
             reservation = connection.execute(
@@ -159,7 +163,7 @@ def update_room_reservation(
                     AND user_id = :user_id 
                     AND status = 'active'
                 """),
-                {"uuid": uuid, "user_id": user_id},
+                {"uuid": uuid, "user_id": "user"},
             ).fetchone()
 
             if not reservation:
@@ -181,7 +185,7 @@ def update_room_reservation(
 
             # Update reservation
             update_fields = []
-            params = {"uuid": uuid, "user_id": user_id}
+            params = {"uuid": uuid, "user_id": "user"}
 
             for field in ["start-date", "end-date", "guest-name", "guest-email"]:
                 if field in body:

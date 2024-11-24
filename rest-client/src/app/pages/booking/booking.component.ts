@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { HttpClient } from '@angular/common/http';
+import { AgencyService } from '../../services/agency.service';
 
 @Component({
   selector: 'app-booking',
@@ -37,7 +38,8 @@ export class BookingComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private agencyService: AgencyService
   ) { }
 
   ngOnInit(): void {
@@ -53,11 +55,11 @@ export class BookingComponent implements OnInit {
         roomId: this.roomId,
       };
 
-      const token = 'YOUR_AUTH_TOKEN'; // Replace with the actual token retrieval logic
+      const token = 'secret';
 
       this.http
         .post(
-          `http://localhost:5555/api/v1/rooms/${this.roomId}/book`,
+          `${this.agencyService.getAgencyUrl(this.agency)}/room/${this.roomId}/book`,
           bookingData,
           {
             params: { token },

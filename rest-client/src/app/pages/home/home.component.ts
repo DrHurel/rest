@@ -52,19 +52,6 @@ import { SearchBarComponent } from "../../components/search-bar/search-bar.compo
 })
 export class HomeComponent implements OnInit {
 
-  private roomService = inject(RoomService);
-  private datePipe = inject(DatePipe);
-
-  searchForm = new FormGroup({
-    search: new FormControl(''),
-    beds: new FormControl<number | null>(null),
-    checkin: new FormControl<Date | null>(null),
-    checkout: new FormControl<Date | null>(null),
-    minPrice: new FormControl<number | null>(null),
-    maxPrice: new FormControl<number | null>(null),
-    minSize: new FormControl<number | null>(null)
-  });
-
   rooms = signal<Room[]>([]);
   isLoading = signal<boolean>(false);
   error: string | null = null;

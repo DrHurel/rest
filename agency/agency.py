@@ -1,4 +1,5 @@
 from datetime import date
+import datetime
 from pathlib import Path
 from connexion import FlaskApp
 from typing import Any, Dict, List, Optional
@@ -6,6 +7,9 @@ import configparser
 import httpx
 from sqlalchemy import create_engine, text
 from connexion.options import SwaggerUIOptions
+from generated.rest_hotel_api_client.models.hotel_book_room_body import (
+    HotelBookRoomBody,
+)
 from generated.rest_hotel_api_client.client import Client
 from generated.rest_hotel_api_client.api.default import (
     hotel_get_room_details,
@@ -111,31 +115,46 @@ def book_room(uuid: str, token: str, body: Dict[str, Any]) -> Dict[str, Any]:
             try:
                 # Forward the booking request to the hotel
                 booking_result = hotel_book_room.sync(
-                    uuid=original_id, token=token, json_body=body, client=hotelClient
+                    uuid=original_id,
+                    token=token,
+                    body=HotelBookRoomBody(
+                        start_date=datetime.datetime.fromisoformat(body["start-date"]),
+                        end_date=datetime.datetime.fromisoformat(body["end-date"]),
+                    ),
+                    client=hotelClient,
                 )
+
+                print(booking_result)
 
                 # Store the booking in our database
                 with engine.connect() as connection:
-                    query = """
-                        INSERT INTO bookings (hotel_domain, room_id, booking_id, guest_name, guest_email, start_date, end_date)
-                        VALUES (:domain, :room_id, :booking_id, :guest_name, :guest_email, :start_date, :end_date)
-                        RETURNING id
-                    """
+                    query = """INSERT INTO reservations (reservation_id, hotel_id, customer_name, customer_email, check_in_date, check_out_date, total_price, reservation_status) VALUES (:reservation_id, :hotel_id, :customer_name, :customer_email, :check_in_date, :check_out_date, :total_price, :reservation_status) RETURNING reservation_id"""
+
                     params = {
-                        "domain": domain,
-                        "room_id": original_id,
-                        "booking_id": booking_result.get("id"),
-                        "guest_name": body.get("guest-name"),
-                        "guest_email": body.get("guest-email"),
-                        "start_date": body.get("start-date"),
-                        "end_date": body.get("end-date"),
+                        "reservation_id": booking_result.id,
+                        "hotel_id": domain,  # Assuming "domain" corresponds to the hotel ID
+                        "customer_name": body.get(
+                            "guest-name"
+                        ),  # guest_name -> customer_name
+                        "customer_email": body.get(
+                            "guest-email"
+                        ),  # guest_email -> customer_email
+                        "check_in_date": body.get(
+                            "start-date"
+                        ),  # start_date -> check_in_date
+                        "check_out_date": body.get(
+                            "end-date"
+                        ),  # end_date -> check_out_date
+                        "total_price": 500,  # Replace with your actual logic to calculate the price
+                        "reservation_status": "Pending",  # Default reservation status
                     }
+
                     connection.execute(text(query), params)
                     connection.commit()
-
-                result = booking_result.to_dict()
-                result["id"] = f"{domain}-{result.get('id')}"
-                return result, 200
+                    print(token)
+                # result = booking_result
+                # result["id"] = "{}-{}".format(domain, result.get("id"))
+                return {}, 200
 
             except httpx.ConnectError as e:
                 return {"error": f"Connection to hotel API failed: {str(e)}"}, 500
@@ -196,7 +215,7 @@ def update_room_reservation(
             try:
                 # Forward the update request to the hotel
                 update_result = hotel_update_room_reservation.sync(
-                    uuid=original_id, token=token, json_body=body, client=hotelClient
+                    uuid=original_id, token=token, body=body, client=hotelClient
                 )
 
                 # Update our database
