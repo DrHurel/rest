@@ -16,6 +16,7 @@ from utils.sql_function import (
     filter_by_availability,
     is_room_available,
 )
+from flask_cors import CORS
 
 # Path configuration
 root_path = Path(__file__).parent
@@ -26,6 +27,8 @@ config.read(root_path / "hotel.ini")
 
 # Connexion App initialization
 app = FlaskApp(__name__, specification_dir=str(root_path))
+CORS(app.app, resources={r"/*": {"origins": "*"}})
+
 options = SwaggerUIOptions(swagger_ui_path="/docs")
 
 app.add_api("hotel.yaml", swagger_ui_options=options)

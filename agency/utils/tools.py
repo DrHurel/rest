@@ -14,15 +14,26 @@ def get_hotel_domain(room_id: str) -> tuple[str, str]:
 def fetch_rooms(start_date, end_date, minsize, minprize, maxprice, beds, services, res):
     for service in services:
         with Client(f"http://{service}/api/v1") as hotelClient:
-            rooms = hotel_get_rooms.sync(
-                start_date=start_date,
-                end_date=end_date,
-                minsize=minsize,
-                minprize=minprize,
-                maxprice=maxprice,
-                beds=beds,
-                client=hotelClient,
-            )
+            rooms = []
+            if end_date is not None:
+                rooms = hotel_get_rooms.sync(
+                    start_date=start_date,
+                    end_date=end_date,
+                    minsize=minsize,
+                    minprize=minprize,
+                    maxprice=maxprice,
+                    beds=beds,
+                    client=hotelClient,
+                )
+            else:
+                rooms = hotel_get_rooms.sync(
+                    start_date=start_date,
+                    minsize=minsize,
+                    minprize=minprize,
+                    maxprice=maxprice,
+                    beds=beds,
+                    client=hotelClient,
+                )
             for room in rooms:
                 value = room.to_dict()
                 value["id"] = f"{service}|{value.get('id')}"

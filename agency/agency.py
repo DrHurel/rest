@@ -14,6 +14,7 @@ from generated.rest_hotel_api_client.api.default import (
     hotel_update_room_reservation,
     hotel_get_hotel_info,
 )
+from flask_cors import CORS
 
 from utils.tools import fetch_rooms, get_hotel_domain
 
@@ -24,9 +25,13 @@ root_path = Path(__file__).parent
 config = configparser.ConfigParser()
 config.read(root_path / "agency.ini")
 
+
 # Connexion App initialization
 app = FlaskApp(__name__, specification_dir=str(root_path))
 options = SwaggerUIOptions(swagger_ui_path="/docs")
+
+CORS(app.app, resources={r"/*": {"origins": "*"}})
+
 
 app.add_api("agency.yaml", swagger_ui_options=options)
 
@@ -47,10 +52,14 @@ def get_rooms(
     """
     Retrieve a list of rooms from all connected hotels with optional filters.
     """
+    global engine
     services = []
-    with engine.connect() as connection:
-        hotels = connection.execute(text("SELECT domain FROM hotels")).fetchall()
-        services = [hotel._mapping["domain"] for hotel in hotels]
+    try:
+        with engine.connect() as connection:
+            hotels = connection.execute(text("SELECT domain FROM hotels")).fetchall()
+            services = [hotel._mapping["domain"] for hotel in hotels]
+    except Exception as e:
+        return {"error": f"An unexpected error occurred: {str(e)}"}, 500
 
     res = []
     try:

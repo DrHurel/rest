@@ -6,3 +6,4 @@ openapi-python-client
 sqlalchemy
 psycopg2
 jwt
+flask-cors
