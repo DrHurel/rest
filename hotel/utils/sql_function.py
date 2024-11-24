@@ -66,15 +66,9 @@ def fetch_rooms(minsize, minprize, maxprice, beds, connection):
 
 def fetch_room_detail_by_id(uuid, connection):
     query = """
-                SELECT r.id, r.name, r.size, r.beds, r.price, r.description,
-                       array_agg(DISTINCT a.name) as amenities,
-                       array_agg(DISTINCT i.url) as images
+                SELECT r.id, r.name, r.size, r.beds, r.price, r.description
                 FROM rooms r
-                LEFT JOIN room_amenities ra ON r.id = ra.room_id
-                LEFT JOIN amenities a ON ra.amenity_id = a.id
-                LEFT JOIN room_images i ON r.id = i.room_id
                 WHERE r.id = :uuid
-                GROUP BY r.id, r.name, r.size, r.beds, r.price, r.description
             """
 
     result = connection.execute(text(query), {"uuid": uuid}).fetchone()

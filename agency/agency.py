@@ -48,15 +48,25 @@ engine = create_engine(DATABASE_URI, echo=True)  # echo=True logs SQL queries
 def get_rooms(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
-    minsize: Optional[int] = 0,
-    minprize: Optional[float] = 0,
-    maxprice: Optional[float] = 100000000,
+    minsize: Optional[int] = None,
+    minprize: Optional[float] = None,
+    maxprice: Optional[float] = None,
     beds: Optional[int] = 1,
 ) -> List[Dict[str, Any]]:
     """
     Retrieve a list of rooms from all connected hotels with optional filters.
     """
     global engine
+
+    if minprize is None:
+        minprize = 0
+
+    if maxprice is None:
+        maxprice = 100000000
+
+    if minsize is None:
+        minsize = 0
+
 
     if start_date is None:
         start_date = date.today()

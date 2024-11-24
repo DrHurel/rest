@@ -1,8 +1,6 @@
 from functools import wraps
 from typing import Any, Dict, Tuple
 
-import jwt
-
 
 def validate_token(token: str, JWT_SECRET) -> Tuple[bool, Dict[str, Any]]:  # noqa: F821
     """

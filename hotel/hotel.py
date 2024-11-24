@@ -1,8 +1,7 @@
 import datetime
 from pathlib import Path
-import time
 from connexion import FlaskApp
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 import configparser
 from sqlalchemy import create_engine, text
 from connexion.options import SwaggerUIOptions
@@ -44,14 +43,24 @@ engine = create_engine(DATABASE_URI, echo=True)  # echo=True logs SQL queries
 def get_rooms(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
-    minsize: Optional[int] = 0,
-    minprize: Optional[float] = 0,
-    maxprice: Optional[float] = 100000000,
+    minsize: Optional[int] = None,
+    minprize: Optional[float] = None,
+    maxprice: Optional[float] = None,
     beds: Optional[int] = 1,
 ) -> List[Dict[str, Any]]:
     """
     Retrieve a list of rooms with optional filters.
     """
+
+    if minprize is None:
+        minprize = 0
+
+    if maxprice is None:
+        maxprice = 100000000
+
+    if minsize is None:
+        minsize = 0
+
     try:
         with engine.connect() as connection:
             rooms = fetch_rooms(minsize, minprize, maxprice, beds, connection)

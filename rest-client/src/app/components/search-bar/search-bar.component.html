@@ -1,38 +1,53 @@
 <form [formGroup]="searchForm" (ngSubmit)="search()" class="flex flex-wrap gap-4 items-center justify-center">
-    <mat-form-field appearance="outline">
-      <mat-label>Search Rooms</mat-label>
-      <input matInput placeholder="Enter room name" formControlName="search">
-      <mat-icon matSuffix>search</mat-icon>
-    </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Search Rooms</mat-label>
+    <input matInput placeholder="Enter room name" formControlName="search">
+    <mat-icon matSuffix>search</mat-icon>
+  </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Beds</mat-label>
-      <mat-select formControlName="beds">
-        <mat-option [value]="1">1 Bed</mat-option>
-        <mat-option [value]="2">2 Beds</mat-option>
-        <mat-option [value]="3">3 Beds</mat-option>
-        <mat-option [value]="4">4+ Beds</mat-option>
-      </mat-select>
-    </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Beds</mat-label>
+    <mat-select formControlName="beds">
+      <mat-option [value]="1">1 Bed</mat-option>
+      <mat-option [value]="2">2 Beds</mat-option>
+      <mat-option [value]="3">3 Beds</mat-option>
+      <mat-option [value]="4">4+ Beds</mat-option>
+    </mat-select>
+  </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Check-in</mat-label>
-      <input matInput [matDatepicker]="checkinPicker" formControlName="checkin">
-      <mat-hint>MM/DD/YYYY</mat-hint>
-      <mat-datepicker-toggle matIconSuffix [for]="checkinPicker"></mat-datepicker-toggle>
-      <mat-datepicker #checkinPicker></mat-datepicker>
-    </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Check-in</mat-label>
+    <input matInput [matDatepicker]="checkinPicker" formControlName="checkin">
+    <mat-hint>MM/DD/YYYY</mat-hint>
+    <mat-datepicker-toggle matIconSuffix [for]="checkinPicker"></mat-datepicker-toggle>
+    <mat-datepicker #checkinPicker></mat-datepicker>
+  </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Check-out</mat-label>
-      <input matInput [matDatepicker]="checkoutPicker" formControlName="checkout">
-      <mat-hint>MM/DD/YYYY</mat-hint>
-      <mat-datepicker-toggle matIconSuffix [for]="checkoutPicker"></mat-datepicker-toggle>
-      <mat-datepicker #checkoutPicker></mat-datepicker>
-    </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Check-out</mat-label>
+    <input matInput [matDatepicker]="checkoutPicker" formControlName="checkout">
+    <mat-hint>MM/DD/YYYY</mat-hint>
+    <mat-datepicker-toggle matIconSuffix [for]="checkoutPicker"></mat-datepicker-toggle>
+    <mat-datepicker #checkoutPicker></mat-datepicker>
+  </mat-form-field>
 
-    <button mat-raised-button color="primary" type="submit" [disabled]="isLoading()">
-      <mat-icon>search</mat-icon>
-      Search
-    </button>
-  </form>
+  <mat-form-field appearance="outline">
+    <mat-label>Min Price</mat-label>
+    <input matInput type="number" placeholder="Enter minimum price" formControlName="minPrice">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Max Price</mat-label>
+    <input matInput type="number" placeholder="Enter maximum price" formControlName="maxPrice">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Min Size</mat-label>
+    <input matInput type="number" placeholder="Enter minimum size" formControlName="minSize">
+  </mat-form-field>
+
+  <button mat-raised-button color="primary" type="submit" [disabled]="isLoading()">
+    <mat-icon>search</mat-icon>
+    Search
+  </button>
+</form>
