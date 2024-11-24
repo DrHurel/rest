@@ -12,25 +12,26 @@ from generated.rest_hotel_api_client.models.hotel_book_room_body import (
 )
 from generated.rest_hotel_api_client.client import Client
 from generated.rest_hotel_api_client.api.default import (
-    hotel_get_room_details,
     hotel_book_room,
-    hotel_cancel_room_reservation,
-    hotel_update_room_reservation,
     hotel_get_hotel_info,
 )
 from flask_cors import CORS
 
-from utils.tools import fetch_rooms, get_hotel_domain
+from utils.tools import (
+    cancel_reservation_at_hotel,
+    fetch_room_details,
+    fetch_rooms,
+    fetch_services,
+    get_hotel_domain,
+    patch_reservation,
+    save_reservations,
+)
 
-# Path configuration
 root_path = Path(__file__).parent
 
-# Load configurations from hotel.ini
 config = configparser.ConfigParser()
 config.read(root_path / "agency.ini")
 
-
-# Connexion App initialization
 app = FlaskApp(__name__, specification_dir=str(root_path))
 options = SwaggerUIOptions(swagger_ui_path="/docs")
 
@@ -39,14 +40,13 @@ CORS(app.app, resources={r"/*": {"origins": "*"}})
 
 app.add_api("agency.yaml", swagger_ui_options=options)
 
-# Database Configuration
 DATABASE_URI = config["DATABASE"]["URI"]
 
 engine = create_engine(DATABASE_URI, echo=True)  # echo=True logs SQL queries
 
 
 def get_rooms(
-    start_date: Optional[str] = date.today(),
+    start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     minsize: Optional[int] = 0,
     minprize: Optional[float] = 0,
@@ -57,13 +57,14 @@ def get_rooms(
     Retrieve a list of rooms from all connected hotels with optional filters.
     """
     global engine
+
+    if start_date is None:
+        start_date = date.today()
+
     services = []
     try:
         with engine.connect() as connection:
-            hotels = connection.execute(
-                text("SELECT domain,rooms_margins FROM hotels")
-            ).fetchall()
-            services = [hotel._mapping for hotel in hotels]
+            services = fetch_services(connection)
     except Exception as e:
         return {"error": f"An unexpected error occurred: {str(e)}"}, 500
 
@@ -88,12 +89,7 @@ def get_room_details(uuid: str) -> Dict[str, Any]:
 
         with Client(f"http://{domain}/api/v1") as hotelClient:
             try:
-                room_details = hotel_get_room_details.sync(
-                    uuid=original_id, client=hotelClient
-                )
-
-                details = room_details.to_dict()
-                details["id"] = f"{domain}-{details.get('id')}"
+                details = fetch_room_details(domain, original_id, hotelClient)
                 return details, 200
 
             except httpx.ConnectError as e:
@@ -113,51 +109,13 @@ def book_room(uuid: str, token: str, body: Dict[str, Any]) -> Dict[str, Any]:
 
         with Client(f"http://{domain}/api/v1") as hotelClient:
             try:
-                # Forward the booking request to the hotel
-                booking_result = hotel_book_room.sync(
-                    uuid=original_id,
-                    token=token,
-                    body=HotelBookRoomBody(
-                        start_date=datetime.datetime.fromisoformat(body["start-date"]),
-                        end_date=datetime.datetime.fromisoformat(body["end-date"]),
-                    ),
-                    client=hotelClient,
-                )
+                booking_result = book_hotel_room(token, body, original_id, hotelClient)
 
-                print(booking_result)
-
-                # Store the booking in our database
                 with engine.connect() as connection:
-                    query = """INSERT INTO reservations (reservation_id, hotel_id, customer_name, customer_email, check_in_date, check_out_date, total_price, reservation_status) VALUES (:reservation_id, :hotel_id, :customer_name, :customer_email, :check_in_date, :check_out_date, :total_price, :reservation_status) RETURNING reservation_id"""
+                    save_reservations(body, domain, booking_result, connection)
 
-                    params = {
-                        "reservation_id": booking_result.id,
-                        "hotel_id": connection.execute(
-                            text(
-                                f"""SELECT hotel_id from hotels WHERE domain = '{domain}'"""
-                            )
-                        ).scalar(),  # Assuming "domain" corresponds to the hotel ID
-                        "customer_name": body.get(
-                            "guest-name", "test"
-                        ),  # guest_name -> customer_name
-                        "customer_email": body.get(
-                            "guest-email", "test"
-                        ),  # guest_email -> customer_email
-                        "check_in_date": body.get(
-                            "start-date"
-                        ),  # start_date -> check_in_date
-                        "check_out_date": body.get(
-                            "end-date"
-                        ),  # end_date -> check_out_date
-                        "total_price": 500,  # Replace with your actual logic to calculate the price
-                        "reservation_status": "Pending",  # Default reservation status
-                    }
-
-                    connection.execute(text(query), params)
-                    connection.commit()
-                    print(token)
-                # result = booking_result
-                # result["id"] = "{}-{}".format(domain, result.get("id"))
+                result = booking_result
+                result["id"] = "{}-{}".format(domain, result.get("id"))
                 return {}, 200
 
             except httpx.ConnectError as e:
@@ -166,6 +124,20 @@ def book_room(uuid: str, token: str, body: Dict[str, Any]) -> Dict[str, Any]:
                 return {"error": f"An unexpected error occurred: {str(e)}"}, 500
     except ValueError as e:
         return {"error": str(e)}, 400
+
+
+def book_hotel_room(token, body, original_id, hotelClient):
+    booking_result = hotel_book_room.sync(
+        uuid=original_id,
+        token=token,
+        body=HotelBookRoomBody(
+            start_date=datetime.datetime.fromisoformat(body["start-date"]),
+            end_date=datetime.datetime.fromisoformat(body["end-date"]),
+        ),
+        client=hotelClient,
+    )
+
+    return booking_result
 
 
 def cancel_room_reservation(uuid: str, token: str) -> Dict[str, Any]:
@@ -177,24 +149,9 @@ def cancel_room_reservation(uuid: str, token: str) -> Dict[str, Any]:
 
         with Client(f"http://{domain}/api/v1") as hotelClient:
             try:
-                # Forward the cancellation request to the hotel
-                cancel_result = hotel_cancel_room_reservation.sync(
-                    uuid=original_id, token=token, client=hotelClient
+                cancel_result = cancel_reservation_at_hotel(
+                    engine, token, domain, original_id, hotelClient
                 )
-
-                # Update our database
-                with engine.connect() as connection:
-                    query = """
-                        UPDATE bookings 
-                        SET status = 'cancelled', 
-                            cancelled_at = CURRENT_TIMESTAMP 
-                        WHERE hotel_domain = :domain 
-                        AND booking_id = :booking_id
-                    """
-                    connection.execute(
-                        text(query), {"domain": domain, "booking_id": original_id}
-                    )
-                    connection.commit()
 
                 return cancel_result.to_dict(), 200
 
@@ -217,40 +174,9 @@ def update_room_reservation(
 
         with Client(f"http://{domain}/api/v1") as hotelClient:
             try:
-                # Forward the update request to the hotel
-                update_result = hotel_update_room_reservation.sync(
-                    uuid=original_id, token=token, body=body, client=hotelClient
+                result = patch_reservation(
+                    engine, token, body, domain, original_id, hotelClient
                 )
-
-                # Update our database
-                with engine.connect() as connection:
-                    update_fields = []
-                    params = {"domain": domain, "booking_id": original_id}
-
-                    for field in [
-                        "start-date",
-                        "end-date",
-                        "guest-name",
-                        "guest-email",
-                    ]:
-                        if field in body:
-                            db_field = field.replace("-", "_")
-                            update_fields.append(f"{db_field} = :{db_field}")
-                            params[db_field] = body[field]
-
-                    if update_fields:
-                        query = f"""
-                            UPDATE reservations 
-                            SET {', '.join(update_fields)},
-                                updated_at = CURRENT_TIMESTAMP
-                            WHERE hotel_domain = :domain 
-                            AND booking_id = :booking_id
-                        """
-                        connection.execute(text(query), params)
-                        connection.commit()
-
-                result = update_result.to_dict()
-                result["id"] = f"{domain}-{result.get('id')}"
                 return result, 200
 
             except httpx.ConnectError as e:
@@ -266,18 +192,15 @@ def get_agency_info() -> Dict[str, Any]:
     Retrieve general information about the agency.
     """
     try:
-        # Get agency information from config
         agency_info = {
             "name": config["agency_description"]["name"],
             "description": config["agency_description"]["description"],
         }
 
-        # Get list of connected hotels
         connected_hotels = []
         with engine.connect() as connection:
             hotels = connection.execute(text("SELECT domain FROM hotels")).fetchall()
 
-            # Get information for each connected hotel
             for hotel in hotels:
                 domain = hotel._mapping["domain"]
                 with Client(f"http://{domain}/api/v1") as hotelClient:
