@@ -16,18 +16,13 @@ import { MatCardModule } from '@angular/material/card';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Room } from '../../models/room';
+import { Room, RoomFilters } from '../../models/room';
+import { RoomCardComponent } from "../../components/room-card/room-card.component";
+import { SearchBarComponent } from "../../components/search-bar/search-bar.component";
 
 
 
-interface RoomFilters {
-  startDate?: string;
-  endDate?: string;
-  minsize?: number;
-  minprize?: number;
-  maxprice?: number;
-  beds?: number;
-}
+
 
 @Component({
   selector: 'app-home',
@@ -48,12 +43,15 @@ interface RoomFilters {
     MatGridListModule,
     MatPaginatorModule,
     MatProgressSpinnerModule,
+    RoomCardComponent,
+    SearchBarComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
+
   private roomService = inject(RoomService);
   private datePipe = inject(DatePipe);
 
@@ -74,53 +72,21 @@ export class HomeComponent implements OnInit {
   totalRooms = signal<number>(0);
   pageSize = 8;
   cols = 4;
+  roomList: any;
 
   ngOnInit() {
     this.adjustColumns(window.innerWidth);
-    this.fetchRooms();
   }
 
-  fetchRooms() {
-    this.isLoading.update(() => true);
-    this.error = null;
+  roomsUpdate(arg0: any) {
 
-    const filters: RoomFilters = {
-      beds: this.searchForm.get('beds')?.value || undefined,
-      startDate: this.searchForm.get('checkin')?.value?.toISOString() || undefined,
-      endDate: this.searchForm.get('checkout')?.value?.toISOString() || undefined,
-      minprize: this.searchForm.get('minPrice')?.value || undefined,
-      maxprice: this.searchForm.get('maxPrice')?.value || undefined,
-      minsize: this.searchForm.get('minSize')?.value || undefined
-    };
-
-    // Fetch rooms using RoomService
-    this.roomService.fetchRooms(filters).subscribe({
-      next: (response) => {
-        this.rooms.update(() => response);
-        this.totalRooms.update(() => response.length);
-        this.isLoading.update(() => false);
-      },
-      error: (error) => {
-        this.error = error;
-        this.isLoading.update(() => false);
-        console.error('Error fetching rooms:', error);
-      }
-    });
+    this.rooms.update(() => arg0)
   }
 
-  search() {
-    this.isLoading.update(() => true);
-    this.fetchRooms();
-  }
 
-  private formatDate(date: Date | null): string | undefined {
-    if (!date) return undefined;
-    return this.datePipe.transform(date, 'yyyy-MM-dd') || undefined;
-  }
 
   onPageChange(event: PageEvent) {
     this.pageSize = event.pageSize;
-    this.fetchRooms();
   }
 
   @HostListener('window:resize', ['$event'])

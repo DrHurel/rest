@@ -1,1 +1,20 @@
-<p>room-card works!</p>
+<mat-card class="w-full max-w-sm m-2">
+    <img mat-card-image [src]="'assets/rooms/' + room.id + '.jpg'" [alt]="room.name" 
+         class="h-48 w-full object-cover">
+    <mat-card-header>
+      <mat-card-title>{{room.name}}</mat-card-title>
+      <mat-card-subtitle>{{room.size}}m² with {{room.beds}} beds</mat-card-subtitle>
+      <p>provided by {{room.agency}} agency</p>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="text-right mt-4">
+        <span class="text-2xl font-bold text-blue-600">${{room.price}}</span>
+        <span class="text-sm text-gray-600 ml-1">per night</span>
+      </div>
+    </mat-card-content>
+    <mat-card-actions class="flex justify-between p-4">
+      <button mat-raised-button color="primary">
+        <mat-icon>book_online</mat-icon> BOOK NOW
+      </button>
+    </mat-card-actions>
+</mat-card>

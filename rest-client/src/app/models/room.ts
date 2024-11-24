@@ -6,3 +6,12 @@ export interface Room {
     beds: number;
     agency: string;
 }
+
+export interface RoomFilters {
+    startDate?: string;
+    endDate?: string;
+    minsize?: number;
+    minprize?: number;
+    maxprice?: number;
+    beds?: number;
+}
