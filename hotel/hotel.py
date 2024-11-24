@@ -27,7 +27,6 @@ DATABASE_URI = config["DATABASE"]["URI"]
 
 # Create SQLAlchemy engine and session
 engine = create_engine(DATABASE_URI, echo=True)  # echo=True logs SQL queries
-SessionLocal = sessionmaker(bind=engine)
 
 
 # Get all rooms

@@ -1,0 +1,3 @@
+INSERT INTO hotels (hotel_id, name, domain, rooms_margins) VALUES (gen_random_uuid(), 'Serene Bay Resort & Spa', 'hotel-serene:4567', 0.150);
+INSERT INTO hotels (hotel_id, name, domain, rooms_margins) VALUES (gen_random_uuid(), 'Mountain Crest Lodge', 'hotel-mountain:2345', 0.120);
+INSERT INTO hotels (hotel_id, name, domain, rooms_margins) VALUES (gen_random_uuid(), 'Palm Horizon Villas', 'hotel-palm:3456', 0.200);

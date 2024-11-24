@@ -171,6 +171,7 @@ services:
         SERVICE_ID : agency-urban
         EXPOSED_PORT : 5555
     depends_on:
+      - db-agency-urban
       - hotel-urban
       - hotel-serene
       - hotel-mountain
@@ -179,7 +180,7 @@ services:
     ports:
       - "5555:5555"  
     environment:
-      DATABASE_URL: postgres://postgres:password@db-hotel-urban:5432/urban_db
+      DATABASE_URL: postgres://postgres:password@db-agency-urban:5432/urban_db
 
   agency-luxe:
     build:
@@ -190,6 +191,7 @@ services:
         SERVICE_ID : agency-luxe
         EXPOSED_PORT : 4444
     depends_on:
+      - db-agency-luxe
       - hotel-urban
       - hotel-serene
       - hotel-mountain
@@ -198,7 +200,42 @@ services:
     ports:
       - "4444:4444"  
     environment:
-      DATABASE_URL: postgres://postgres:password@db-hotel-urban:5432/urban_db
+      DATABASE_URL: postgres://postgres:password@db-agency-luxe:5432/luxe_db
+  
+  db-agency-urban:
+    build:
+      context: ../
+      dockerfile: ./docker/databases/Dockerfile
+      args:
+        SERVICE_SCHEMA : agency
+        DATA_FILE: agency-urban
+        EXPOSED_PORT : 9006
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: urban_db
+    ports:
+      - "9006:9006"
+    volumes:
+      - urban-agency-data:/var/lib/postgresql/data
+
+  db-agency-luxe:
+    build:
+      context: ../
+      dockerfile: ./docker/databases/Dockerfile
+      args:
+        SERVICE_SCHEMA : agency
+        DATA_FILE: agency-urban
+        EXPOSED_PORT : 9007
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: luxe_db
+    ports:
+      - "9007:9007"
+    volumes:
+      - luxe-agency-data:/var/lib/postgresql/data
+
 
 
 volumes:
@@ -207,5 +244,7 @@ volumes:
   palm-data:
   serene-data:
   urban-data:
+  urban-agency-data:
+  luxe-agency-data:
 
 

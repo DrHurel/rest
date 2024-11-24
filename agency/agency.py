@@ -1,10 +1,11 @@
+from datetime import date
 from pathlib import Path
 from urllib import response
 from connexion import FlaskApp
 from typing import Any, Dict, List, Optional
 import configparser
 import httpx
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text, values
 from sqlalchemy.orm import sessionmaker
 from connexion.options import SwaggerUIOptions
 from generated.rest_hotel_api_client.client import Client
@@ -34,7 +35,7 @@ DATABASE_URI = config["DATABASE"]["URI"]
 
 # Get all rooms
 def get_rooms(
-    start_date: Optional[str] = None,
+    start_date: Optional[str] = date.today(),
     end_date: Optional[str] = None,
     minsize: Optional[int] = 0,
     minprize: Optional[float] = 0,
@@ -55,22 +56,28 @@ def get_rooms(
     Returns:
         List[Dict[str, Any]]: A list of rooms matching the criteria.
     """
-
-    with Client("http://hotel-heritage:1234/api/v1") as hotelClient:
-        try:
-            rooms = hotel_get_rooms.sync(
-                minsize=minsize,
-                minprize=minprize,
-                maxprice=maxprice,
-                beds=beds,
-                client=hotelClient,
-            )
-
-            return [room.to_dict() for room in rooms], 200
-        except httpx.ConnectError as e:
-            return {"error": f"Connection to hotel API failed : {str(e)}"}, 500
-        except Exception as e:
-            return {"error": f"An unexpected error occurred: {str(e)}"}, 500
+    services = ["hotel-heritage:1234", "hotel-mountain:2345", "hotel-palm:3456"]
+    res = []
+    for service in services:
+        with Client(f"http://{service}/api/v1") as hotelClient:
+            try:
+                rooms = hotel_get_rooms.sync(
+                    start_date=start_date,
+                    minsize=minsize,
+                    minprize=minprize,
+                    maxprice=maxprice,
+                    beds=beds,
+                    client=hotelClient,
+                )
+                for room in rooms:
+                    value = room.to_dict()
+                    value["id"] = "{}-{}".format(service, value.get("id"))
+                    res.append(value)
+            except httpx.ConnectError as e:
+                return {"error": f"Connection to hotel API failed : {str(e)}"}, 500
+            except Exception as e:
+                return {"error": f"An unexpected error occurred: {str(e)}"}, 500
+    return res, 200
 
 
 # Get room detailed information
